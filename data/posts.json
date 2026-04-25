@@ -1,0 +1,17 @@
+{
+  "hello-world": {
+    "title": "Hello World",
+    "content": "This is our first post! Next.js makes it easy to deliver content via Server-Side Rendering (SSR).",
+    "date": "2024-04-20"
+  },
+  "nextjs-is-awesome": {
+    "title": "Next.js is Awesome",
+    "content": "Next.js provides a great developer experience out of the box with features like hot code reloading and automatic routing.",
+    "date": "2024-04-22"
+  },
+  "typescript-power": {
+    "title": "The Power of TypeScript",
+    "content": "Using TypeScript with Next.js catches bugs early and provides amazing autocomplete in your editor.",
+    "date": "2024-04-24"
+  }
+}

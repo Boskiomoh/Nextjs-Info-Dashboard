@@ -1,0 +1,14 @@
+[
+  {
+    "username": "admin",
+    "password": "password123",
+    "name": "Project Admin",
+    "role": "admin"
+  },
+  {
+    "username": "student",
+    "password": "study-hard",
+    "name": "Next.js Student",
+    "role": "student"
+  }
+]
