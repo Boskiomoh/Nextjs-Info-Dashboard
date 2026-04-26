@@ -3,64 +3,41 @@ import ConceptCard from '@/components/ConceptCard';
 
 export default function Home() {
   return (
-    <>
-      <section className="hero">
-        <h1>Mastering Next.js</h1>
-        <p className="subtitle">Interactive Study Dashboard based on Sonny Sangha's Handbook</p>
-      </section>
+    <div className="flex flex-col items-center">
+      <header className="hero-header animate-fade-in">
+        <h1 className="hero-title">
+          Mastering Next.js
+        </h1>
+        <p className="text-slate-400 text-xl font-medium max-w-2xl mx-auto leading-relaxed">
+          The ultimate interactive study dashboard for modern web development.
+        </p>
+      </header>
 
-      <div className="grid">
-        <ConceptCard 
-          tag="Core Benefit"
-          title="Server-Side Rendering (SSR)"
-          description="Next.js renders your page on the server first. This makes your site visible immediately and is great for SEO because search engines can see your content easily."
-        />
-        <ConceptCard 
-          tag="Feature"
-          title="Automatic Routing"
-          description="Forget complex route files! Just create a file in the 'app' directory, and it instantly becomes a URL. 'app/about/page.tsx' becomes '/about'."
-        />
-        <ConceptCard 
-          tag="Performance"
-          title="Code Splitting"
-          description="Next.js doesn't send all the code at once. It only sends the code needed for the specific page you are visiting. This keeps the initial load super fast."
-        />
-        <ConceptCard 
-          tag="Benefit"
-          title="Prefetching"
-          description="When you use the <Link> component, Next.js starts loading the next page in the background as soon as the link appears on your screen!"
-        />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full mt-10">
+        <div className="pro-card">
+          <span className="text-[10px] uppercase font-bold text-[#6366f1] mb-2 tracking-widest">Core Benefit</span>
+          <h3 className="text-xl font-black mb-3">Server Rendering</h3>
+          <p className="text-slate-400 text-sm leading-relaxed">Pages are pre-rendered on the server for instant loading and perfect SEO.</p>
+        </div>
+        
+        <div className="pro-card">
+          <span className="text-[10px] uppercase font-bold text-[#6366f1] mb-2 tracking-widest">Feature</span>
+          <h3 className="text-xl font-black mb-3">Auto Routing</h3>
+          <p className="text-slate-400 text-sm leading-relaxed">The file system is your router. No complex configurations needed.</p>
+        </div>
+
+        <div className="pro-card">
+          <span className="text-[10px] uppercase font-bold text-[#6366f1] mb-2 tracking-widest">Performance</span>
+          <h3 className="text-xl font-black mb-3">Code Splitting</h3>
+          <p className="text-slate-400 text-sm leading-relaxed">Only download the code you need, keeping your app fast and lightweight.</p>
+        </div>
+
+        <div className="pro-card">
+          <span className="text-[10px] uppercase font-bold text-[#6366f1] mb-2 tracking-widest">Benefit</span>
+          <h3 className="text-xl font-black mb-3">Prefetching</h3>
+          <p className="text-slate-400 text-sm leading-relaxed">Next.js loads your next page before you even click the link.</p>
+        </div>
       </div>
-
-      <style>{`
-        .hero {
-          text-align: center;
-          padding: 4rem 0;
-          background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-          background-clip: text;
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-        }
-
-        h1 {
-          font-size: 4rem;
-          font-weight: 800;
-          margin-bottom: 1rem;
-        }
-
-        .subtitle {
-          font-size: 1.25rem;
-          color: var(--text-muted);
-          -webkit-text-fill-color: var(--text-muted);
-        }
-
-        .grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-          gap: 2rem;
-          padding: 2rem 0;
-        }
-      `}</style>
-    </>
+    </div>
   );
 }

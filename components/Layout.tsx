@@ -13,169 +13,69 @@ import { LayoutProps } from '@/types';
  * This is a core React/Next.js pattern for keeping your code "DRY" (Don't Repeat Yourself).
  */
 import { useAuthStore } from '@/stores/authStore';
+import { useRouter } from 'next/navigation';
 
 const Layout: React.FC<LayoutProps> = ({ children, title = 'Next.js Study Portal', hideNav = false }) => {
   const { user, logout, isLoading } = useAuthStore();
+  const router = useRouter();
 
   return (
-    <div className="layout-container">
-
+    <div className="app-wrapper">
       {!hideNav && (
-        <header className="navbar glass">
-          <div className="nav-content">
-          <div className="logo">NextJS<span>Study</span></div>
-          <nav>
-            <ul>
-              <li><NavLink href="/">Dashboard</NavLink></li>
-              <li><NavLink href="/about">About</NavLink></li>
-              <li><NavLink href="/blog">Blog</NavLink></li>
-              <li><NavLink href="/css-demo">CSS Demo</NavLink></li>
-              <li><NavLink href="/api-demo">API Demo</NavLink></li>
-              <li><NavLink href="/ssr-vs-csr">SSR/CSR</NavLink></li>
-              <li><NavLink href="/lazy-loading">Lazy Loading</NavLink></li>
-              <li><NavLink href="/deployment">Deployment</NavLink></li>
-            </ul>
-          </nav>
-          
-          <div className="auth-section">
-            {isLoading ? (
-              <span className="loading-dots">...</span>
-            ) : user ? (
-              <div className="user-info">
-                <span className="username">👋 {user.username}</span>
-                <button 
-                  onClick={() => {
-                    logout();
-                    toast.info("Logged out successfully");
-                  }} 
-                  className="logout-btn"
-                >
-                  Logout
-                </button>
-              </div>
-            ) : (
-              <NavLink href="/login">Login</NavLink>
-            )}
+        <header className="pro-navbar">
+          <div className="nav-container">
+            <div className="nav-logo">
+              NextJS<span>Study</span>
+            </div>
+            
+            <nav>
+              <ul className="flex items-center gap-4 list-none p-0 m-0">
+                <li><NavLink href="/">Dashboard</NavLink></li>
+                <li><NavLink href="/about">About</NavLink></li>
+                <li><NavLink href="/blog">Blog</NavLink></li>
+                <li><NavLink href="/css-demo">CSS Demo</NavLink></li>
+                <li><NavLink href="/api-demo">API Demo</NavLink></li>
+                <li><NavLink href="/ssr-vs-csr">SSR/CSR</NavLink></li>
+                <li><NavLink href="/lazy-loading">Lazy Loading</NavLink></li>
+                <li><NavLink href="/deployment">Deployment</NavLink></li>
+              </ul>
+            </nav>
+            
+            <div className="flex items-center gap-6 pl-8 border-l border-white/10 min-w-[180px] justify-end">
+              {isLoading ? (
+                <div className="h-4 w-12 bg-slate-700 animate-pulse rounded"></div>
+              ) : user ? (
+                <div className="flex items-center gap-6">
+                  <div className="flex flex-col items-end">
+                    <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Status</span>
+                    <span className="text-sm font-bold text-[#6366f1]">{user.username}</span>
+                  </div>
+                  <button 
+                    onClick={async () => {
+                      await logout();
+                      toast.info("Logged out successfully");
+                      router.push('/login');
+                    }} 
+                    className="btn-logout"
+                  >
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <NavLink href="/login">Login</NavLink>
+              )}
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
       )}
 
-      <main className="main-content container animate-fade-in">
+      <main className="content-main animate-fade-in">
         {children}
       </main>
 
-      <footer className="footer glass">
-        <p>© 2026 Next.js Study Project. Inspired by PAPA React Handbook.</p>
+      <footer className="mt-auto px-12 py-10 text-center opacity-50 text-sm">
+        <p>© 2026 Next.js Study Project • Built with Vanilla CSS & Tailwind</p>
       </footer>
-
-      <style jsx>{`
-        .layout-container {
-          min-height: 100vh;
-          display: flex;
-          flex-direction: column;
-        }
-
-        .navbar {
-          position: sticky;
-          top: 0;
-          z-index: 100;
-          margin: 1rem 2rem;
-          padding: 0.75rem 2rem;
-        }
-
-        .nav-content {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          max-width: 1200px;
-          margin: 0 auto;
-          width: 100%;
-          gap: 2rem;
-        }
-
-        .auth-section {
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-          min-width: 150px;
-          justify-content: flex-end;
-          border-left: 1px solid var(--glass-border);
-          padding-left: 1.5rem;
-        }
-
-        .user-info {
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-        }
-
-        .username {
-          font-weight: 600;
-          font-size: 0.9rem;
-          color: var(--primary);
-        }
-
-        .logout-btn {
-          background: rgba(255, 255, 255, 0.05);
-          color: white;
-          border: 1px solid var(--glass-border);
-          padding: 0.4rem 0.8rem;
-          border-radius: 6px;
-          font-size: 0.8rem;
-          cursor: pointer;
-          transition: all 0.3s ease;
-        }
-
-        .logout-btn:hover {
-          background: rgba(239, 68, 68, 0.1);
-          border-color: #ef4444;
-          color: #ef4444;
-        }
-
-        .logo {
-          font-weight: 800;
-          font-size: 1.5rem;
-          letter-spacing: -0.5px;
-        }
-
-        .logo span {
-          color: var(--primary);
-        }
-
-        nav ul {
-          display: flex;
-          gap: 1.5rem;
-          list-style: none;
-        }
-
-        .main-content {
-          flex: 1;
-          padding: 2rem;
-          max-width: 1200px;
-          margin: 0 auto;
-          width: 100%;
-        }
-
-        .footer {
-          margin: 2rem;
-          padding: 1.5rem;
-          text-align: center;
-          color: var(--text-muted);
-          font-size: 0.9rem;
-        }
-
-        @media (max-width: 768px) {
-          .nav-content {
-            flex-direction: column;
-            gap: 1rem;
-          }
-          .navbar {
-            margin: 0;
-            border-radius: 0;
-          }
-        }
-      `}</style>
     </div>
   );
 };

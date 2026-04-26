@@ -5,99 +5,75 @@ import { notFound } from 'next/navigation';
 
 export async function generateMetadata({ params }: PageProps) {
   const { id } = await params;
-  const posts = postsData as PostsData;
-  const post = id ? posts[id] : null;
+  const baseUrl = process.env.DEVTO_API_URL;
+  
+  const res = await fetch(`${baseUrl}/${id}`);
+  const post = await res.json();
 
   return {
-    title: post ? `${post.title} | Next.js Study` : 'Post Not Found',
+    title: post?.title ? `${post.title} | Tech Insights` : 'Post Not Found',
   };
 }
 
 export default async function BlogPostPage({ params }: PageProps) {
   const { id } = await params;
-  const posts = postsData as PostsData;
-  const post = id ? posts[id] : null;
+  const baseUrl = process.env.DEVTO_API_URL;
 
-  if (!post) {
+  // Fetch with revalidation (1 hour)
+  const res = await fetch(`${baseUrl}/${id}`, {
+    next: { revalidate: 3600 }
+  });
+
+  if (!res.ok) {
     notFound();
   }
 
+  const post = await res.json();
+
   return (
-    <article className="post-container animate-fade-in">
-      <header>
-        <span className="category">Study Note</span>
-        <h1>{post.title}</h1>
-        <div className="meta">
-          <span className="date">📅 {post.date}</span>
-          <span className="author">👤 PAPAFAM Student</span>
+    <article className="max-w-4xl mx-auto py-12 px-4 animate-fade-in">
+      {post.cover_image && (
+        <img 
+          src={post.cover_image} 
+          alt={post.title} 
+          className="w-full h-[400px] object-cover rounded-3xl mb-12 shadow-2xl" 
+        />
+      )}
+      
+      <header className="mb-12">
+        <div className="flex gap-3 mb-6">
+          {post.tags?.map((tag: string) => (
+            <span key={tag} className="text-sm font-bold text-[#6366f1] tracking-wide">#{tag}</span>
+          ))}
+        </div>
+        <h1 className="text-6xl font-black text-white mb-8 leading-[1.1] tracking-tighter">
+          {post.title}
+        </h1>
+        <div className="flex items-center gap-6 text-slate-400 text-sm pb-8 border-b border-white/10">
+          <span className="flex items-center gap-2">📅 {new Date(post.published_at).toLocaleDateString()}</span>
+          <span className="flex items-center gap-2">👤 {post.user?.name}</span>
         </div>
       </header>
 
-      <div className="content">
-        <p>{post.content}</p>
-        <div className="lesson glass">
-          <h4>💡 Next.js Lesson Learned:</h4>
-          <p>
-            I retrieved this post data using <strong>Server Components</strong>. 
-            Next.js saw the ID <strong>"{id}"</strong> in the URL and used it to find 
-            the correct post in my data file on the server before sending the HTML to your browser.
+      <div className="prose prose-invert max-w-none">
+        <p className="text-2xl font-medium text-slate-200 mb-10 leading-relaxed italic border-l-4 border-[#6366f1] pl-6">
+          {post.description}
+        </p>
+        
+        <div className="text-slate-300 text-lg leading-loose whitespace-pre-wrap mb-16">
+          {post.body_markdown.split('\n').slice(0, 15).join('\n')}...
+        </div>
+
+        <div className="bg-[#6366f1]/5 border-l-4 border-[#6366f1] p-8 rounded-r-2xl backdrop-blur-sm">
+          <h4 className="text-[#6366f1] font-bold text-xl mb-3">💡 Next.js Pro Tip:</h4>
+          <p className="text-slate-300 leading-relaxed">
+            This page is now fully powered by <strong>Tailwind CSS</strong>! 
+            Unlike <code>styled-jsx</code>, Tailwind works seamlessly inside Server Components, 
+            allowing us to build complex, beautiful layouts that are rendered entirely on the server 
+            for maximum performance.
           </p>
         </div>
       </div>
-
-      <style>{`
-        .post-container {
-          max-width: 800px;
-          margin: 0 auto;
-          padding: 2rem 0;
-        }
-
-        .category {
-          color: var(--primary);
-          text-transform: uppercase;
-          font-weight: 700;
-          font-size: 0.8rem;
-          letter-spacing: 1px;
-        }
-
-        h1 {
-          font-size: 3.5rem;
-          margin: 1rem 0;
-          line-height: 1.1;
-        }
-
-        .meta {
-          display: flex;
-          gap: 2rem;
-          color: var(--text-muted);
-          font-size: 0.9rem;
-          margin-bottom: 3rem;
-          padding-bottom: 2rem;
-          border-bottom: 1px solid var(--glass-border);
-        }
-
-        .content {
-          font-size: 1.25rem;
-          line-height: 1.8;
-          color: #cbd5e1;
-        }
-
-        .lesson {
-          margin-top: 4rem;
-          padding: 2rem;
-          border-left: 4px solid var(--primary);
-        }
-
-        .lesson h4 {
-          color: var(--primary);
-          margin-bottom: 0.5rem;
-        }
-
-        .lesson p {
-          font-size: 1rem;
-          margin: 0;
-        }
-      `}</style>
     </article>
   );
 }

@@ -18,7 +18,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   login: async (username, password) => {
     set({ isLoading: true });
     try {
-      const response = await fetch('/api/auth/login', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api';
+      const response = await fetch(`${apiUrl}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
@@ -38,7 +39,8 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   logout: async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api';
+      await fetch(`${apiUrl}/auth/logout`, { method: 'POST' });
       set({ user: null });
       // Redirect handled by component or middleware
     } catch (error) {
@@ -50,7 +52,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     // Only check if not already loading and not initialized
     set({ isLoading: true });
     try {
-      const response = await fetch('/api/auth/me');
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api';
+      const response = await fetch(`${apiUrl}/auth/me`);
       if (response.ok) {
         const data = await response.json();
         set({ user: data.user });

@@ -7,85 +7,63 @@ export default function CssDemoPage() {
   const [color, setColor] = useState('#6366f1');
 
   return (
-    <>
-      <h1>Styling in Next.js</h1>
-      <p className="subtitle">Learn about styled-jsx and scoped styling.</p>
-
-      <div className="demo-box glass">
-        <h2 className="dynamic-title">I am a Scoped H2</h2>
-        <p>Changing the color below only affects this specific component.</p>
-        <div className="controls">
-          <button onClick={() => setColor('#f43f5e')} className="btn red">Red</button>
-          <button onClick={() => setColor('#10b981')} className="btn green">Green</button>
-          <button onClick={() => setColor('#6366f1')} className="btn blue">Default</button>
+    <div className="py-10 flex flex-col items-center">
+      <section className="mb-16 text-center max-w-3xl">
+        <h1 className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#10b981] to-[#6366f1] mb-4 tracking-tighter">Styling in Next.js</h1>
+        <p className="text-slate-400 text-xl font-medium">Mastering modern styling techniques with Tailwind and React.</p>
+      </section>
+      <div className="p-12 bg-slate-800/40 backdrop-blur-xl border border-white/10 rounded-[2.5rem] text-center mb-16 shadow-2xl relative overflow-hidden group">
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#6366f1] to-transparent opacity-50"></div>
+        
+        <h2 
+          className="text-5xl font-black mb-6 transition-all duration-500 tracking-tight"
+          style={{ color }}
+        >
+          Dynamic Styling Demo
+        </h2>
+        <p className="text-slate-300 text-lg mb-10 max-w-2xl mx-auto">
+          Tailwind makes it easy to handle dynamic states. Use standard React state to swap colors instantly without writing custom CSS.
+        </p>
+        
+        <div className="flex justify-center gap-4">
+          <button 
+            onClick={() => setColor('#f43f5e')} 
+            className="px-8 py-3 rounded-2xl bg-[#f43f5e] text-white font-bold hover:scale-105 active:scale-95 transition-all shadow-lg shadow-rose-500/20"
+          >
+            Rose Red
+          </button>
+          <button 
+            onClick={() => setColor('#10b981')} 
+            className="px-8 py-3 rounded-2xl bg-[#10b981] text-white font-bold hover:scale-105 active:scale-95 transition-all shadow-lg shadow-emerald-500/20"
+          >
+            Emerald Green
+          </button>
+          <button 
+            onClick={() => setColor('#6366f1')} 
+            className="px-8 py-3 rounded-2xl bg-[#6366f1] text-white font-bold hover:scale-105 active:scale-95 transition-all shadow-lg shadow-indigo-500/20"
+          >
+            Indigo (Default)
+          </button>
         </div>
       </div>
 
-      <div className="grid">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <ConceptCard 
           tag="Standard"
-          title="styled-jsx"
-          description="The default library in Next.js. Write <style jsx> blocks to keep your styles close to your HTML."
-          code={`<style jsx>{\`
-  h1 { color: red; }
-\`}</style>`}
+          title="Tailwind CSS"
+          description="The industry standard. Utility-first classes that work perfectly with Next.js Server and Client components."
         />
         <ConceptCard 
           tag="Global"
-          title="Global Styles"
-          description="In App Router, global styles are imported in the root layout.tsx file."
-          code={`import './globals.css';`}
+          title="CSS Variables"
+          description="Use :root variables in your globals.css to create a consistent theme that works across your whole app."
         />
         <ConceptCard 
-          tag="Modern"
-          title="CSS Modules"
-          description="Next.js also supports .module.css files. They automatically create unique class names to avoid naming conflicts."
+          tag="Advanced"
+          title="Glassmorphism"
+          description="Combine backdrop-blur and semi-transparent borders to create premium, high-end user interfaces."
         />
       </div>
-
-      <style jsx>{`
-        h1 { color: var(--primary); font-size: 3rem; }
-        .subtitle { color: var(--text-muted); margin-bottom: 2rem; }
-
-        .demo-box {
-          padding: 3rem;
-          text-align: center;
-          margin-bottom: 3rem;
-        }
-
-        .dynamic-title {
-          color: ${color};
-          font-size: 2.5rem;
-          margin-bottom: 1rem;
-          transition: color 0.5s ease;
-        }
-
-        .controls {
-          display: flex;
-          justify-content: center;
-          gap: 1rem;
-          margin-top: 2rem;
-        }
-
-        .btn {
-          border: none;
-          padding: 0.5rem 1.5rem;
-          border-radius: 6px;
-          color: white;
-          font-weight: 600;
-          cursor: pointer;
-        }
-
-        .red { background: #f43f5e; }
-        .green { background: #10b981; }
-        .blue { background: #6366f1; }
-
-        .grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-          gap: 2rem;
-        }
-      `}</style>
-    </>
+    </div>
   );
 }

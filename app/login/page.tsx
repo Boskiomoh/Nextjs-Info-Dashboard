@@ -15,9 +15,11 @@ const LoginPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
     
-    if (username.trim()) {
+    if (!username.trim()) return;
+
+    setIsSubmitting(true);
+    try {
       const success = await login(username, password);
       if (success) {
         toast.success(`Welcome back, ${username}!`, {
@@ -30,6 +32,11 @@ const LoginPage = () => {
         });
         setIsSubmitting(false);
       }
+    } catch (error) {
+      toast.error('Error', {
+        description: 'Something went wrong. Please try again.',
+      });
+      setIsSubmitting(false);
     }
   };
 

@@ -15,30 +15,25 @@ import { NavLinkProps } from '@/types';
  */
 const NavLink: React.FC<NavLinkProps> = ({ href, children }) => {
   const pathname = usePathname();
-  const isActive = pathname === href;
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isActive = mounted && pathname === href;
 
   return (
-    <Link href={href} className={isActive ? 'active' : ''}>
+    <Link 
+      href={href} 
+      className={`
+        px-4 py-2 rounded-lg transition-all duration-300 font-medium inline-block
+        ${isActive 
+          ? 'text-[#6366f1] bg-[#6366f1]/10 shadow-[0_0_15px_rgba(99,102,241,0.2)]' 
+          : 'text-slate-400 hover:text-white hover:bg-white/5'}
+      `}
+    >
       {children}
-      <style jsx>{`
-        a {
-          padding: 0.5rem 1rem;
-          border-radius: 8px;
-          transition: all 0.3s ease;
-          font-weight: 500;
-          color: var(--text-muted);
-        }
-
-        a:hover {
-          background: rgba(255, 255, 255, 0.05);
-          color: var(--text);
-        }
-
-        a.active {
-          color: var(--primary);
-          background: rgba(99, 102, 241, 0.1);
-        }
-      `}</style>
     </Link>
   );
 };
