@@ -1,0 +1,154 @@
+/* ============================================================
+   FILE: styles/Dashboard.module.css
+
+   WHAT ARE CSS MODULES?
+   Think of a regular .css file as writing your name on a shared
+   whiteboard — anyone in the room can erase or overwrite it.
+
+   A CSS MODULE is like writing in your own private notebook.
+   The styles ONLY apply to the component that imports this file.
+   Next.js makes the class names unique behind the scenes.
+
+   Usage in a component:
+     import styles from '../styles/Dashboard.module.css'
+     <div className={styles.container}>...</div>
+============================================================ */
+
+/* ── Page Wrapper ──────────────────────────────────────────── */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #0f0f1a;
+  min-height: 100vh;
+  color: #e0e0e0;
+}
+
+/* ── Page Title ────────────────────────────────────────────── */
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 0.25rem;
+}
+
+.subtitle {
+  font-size: 0.95rem;
+  color: #888;
+  margin-bottom: 2rem;
+}
+
+/* ── Summary Bar (online/offline count) ────────────────────── */
+.summaryBar {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.summaryCard {
+  flex: 1;
+  min-width: 140px;
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  background: #1a1a2e;
+  border: 1px solid #2a2a4a;
+}
+
+.summaryCard .count {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.summaryCard .label {
+  font-size: 0.8rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.online  { border-left: 4px solid #00d084; }
+.offline { border-left: 4px solid #e74c3c; }
+.total   { border-left: 4px solid #3498db; }
+
+/* ── Device Grid ───────────────────────────────────────────── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+/* ── Individual Device Card ────────────────────────────────── */
+.card {
+  background: #1a1a2e;
+  border: 1px solid #2a2a4a;
+  border-radius: 12px;
+  padding: 1.25rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.deviceName {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.deviceType {
+  font-size: 0.75rem;
+  color: #888;
+  margin-top: 2px;
+}
+
+/* Status Badge — the coloured dot + text */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badgeOnline {
+  background: rgba(0, 208, 132, 0.15);
+  color: #00d084;
+}
+
+.badgeOffline {
+  background: rgba(231, 76, 60, 0.15);
+  color: #e74c3c;
+}
+
+.ip {
+  font-size: 0.85rem;
+  color: #aaa;
+  font-family: 'Courier New', monospace; /* monospace = looks like a terminal */
+  margin-top: 0.5rem;
+}
+
+/* ── Error State ───────────────────────────────────────────── */
+.error {
+  color: #e74c3c;
+  background: rgba(231, 76, 60, 0.1);
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  padding: 1rem;
+  border-radius: 8px;
+}
