@@ -1,11 +1,7 @@
-import React from 'react';
+'use client';
 
-interface ConceptCardProps {
-  title: string;
-  description: string;
-  code?: string;
-  tag?: string;
-}
+import React from 'react';
+import { ConceptCardProps } from '@/types';
 
 /**
  * LAYMAN EXPLANATION:

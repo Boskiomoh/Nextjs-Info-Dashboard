@@ -1,12 +1,9 @@
+'use client';
+
 import React, { ReactNode } from 'react';
 import NavLink from '@/components/NavLink';
-import Head from 'next/head';
-
-interface LayoutProps {
-  children: ReactNode;
-  title?: string;
-  hideNav?: boolean;
-}
+import { toast } from 'sonner';
+import { LayoutProps } from '@/types';
 
 /**
  * LAYMAN EXPLANATION:
@@ -15,17 +12,13 @@ interface LayoutProps {
  * Any page wrapped with <Layout> will automatically get this navigation and structure.
  * This is a core React/Next.js pattern for keeping your code "DRY" (Don't Repeat Yourself).
  */
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthStore } from '@/stores/authStore';
 
 const Layout: React.FC<LayoutProps> = ({ children, title = 'Next.js Study Portal', hideNav = false }) => {
-  const { user, logout, isLoading } = useAuth();
+  const { user, logout, isLoading } = useAuthStore();
 
   return (
     <div className="layout-container">
-      <Head>
-        <title>{title}</title>
-        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
-      </Head>
 
       {!hideNav && (
         <header className="navbar glass">
@@ -50,7 +43,15 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'Next.js Study Portal
             ) : user ? (
               <div className="user-info">
                 <span className="username">👋 {user.username}</span>
-                <button onClick={logout} className="logout-btn">Logout</button>
+                <button 
+                  onClick={() => {
+                    logout();
+                    toast.info("Logged out successfully");
+                  }} 
+                  className="logout-btn"
+                >
+                  Logout
+                </button>
               </div>
             ) : (
               <NavLink href="/login">Login</NavLink>

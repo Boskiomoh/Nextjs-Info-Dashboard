@@ -1,23 +1,21 @@
+'use client';
+
 import React, { ReactNode } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
-
-interface NavLinkProps {
-  href: string;
-  children: ReactNode;
-}
+import { usePathname } from 'next/navigation';
+import { NavLinkProps } from '@/types';
 
 /**
  * LAYMAN EXPLANATION:
  * The PDF mentions that Next.js's standard <Link> doesn't automatically highlight
  * which page you are currently on. 
- * This custom NavLink component uses the 'useRouter' hook to look at the current 
+ * This custom NavLink component uses the 'usePathname' hook to look at the current 
  * URL in your browser. If the URL matches the link's destination (href), 
  * it adds an "active" class so we can style it differently (e.g., make it purple).
  */
 const NavLink: React.FC<NavLinkProps> = ({ href, children }) => {
-  const router = useRouter();
-  const isActive = router.pathname === href;
+  const pathname = usePathname();
+  const isActive = pathname === href;
 
   return (
     <Link href={href} className={isActive ? 'active' : ''}>

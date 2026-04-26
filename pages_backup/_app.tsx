@@ -9,10 +9,12 @@ import '../styles/globals.css';
  * The 'Component' prop is the actual page you are visiting (like index.tsx or about.tsx).
  */
 import { AuthProvider } from '@/contexts/AuthContext';
+import { Toaster } from 'sonner';
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <AuthProvider>
+      <Toaster richColors position="top-right" closeButton />
       <Component {...pageProps} />
     </AuthProvider>
   );

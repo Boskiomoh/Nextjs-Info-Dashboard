@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Layout from '@/components/Layout';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/router';
+import { toast } from 'sonner';
 
 const LoginPage = () => {
   const [username, setUsername] = useState('');
@@ -19,9 +20,14 @@ const LoginPage = () => {
     if (username.trim()) {
       const success = await login(username, password);
       if (success) {
+        toast.success(`Welcome back, ${username}!`, {
+          description: "You have successfully logged into your dashboard.",
+        });
         router.push('/');
       } else {
-        setError('Invalid username or password');
+        toast.error('Authentication Failed', {
+          description: 'Invalid username or password. Please try again.',
+        });
         setIsSubmitting(false);
       }
     }

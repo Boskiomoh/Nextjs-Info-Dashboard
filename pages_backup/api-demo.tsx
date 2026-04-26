@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import ConceptCard from '../components/ConceptCard';
+import { toast } from 'sonner';
 
 /**
  * LAYMAN EXPLANATION:
@@ -18,8 +19,14 @@ const ApiDemo: React.FC = () => {
       const res = await fetch('/api/hello');
       const json = await res.json();
       setData(json);
+      toast.success("API Response Received", {
+        description: `Successfully fetched data from /api/hello`
+      });
     } catch (e) {
       console.error(e);
+      toast.error("API Fetch Failed", {
+        description: "Could not connect to the server."
+      });
     } finally {
       setLoading(false);
     }
