@@ -1,6 +1,6 @@
 import React from 'react';
 import postsData from '@/data/posts.json';
-import { PostsData, PageProps } from '@/types';
+import { DevToArticle, PageProps } from '@/types';
 import { notFound } from 'next/navigation';
 
 export async function generateMetadata({ params }: PageProps) {
@@ -8,7 +8,7 @@ export async function generateMetadata({ params }: PageProps) {
   const baseUrl = process.env.DEVTO_API_URL;
   
   const res = await fetch(`${baseUrl}/${id}`);
-  const post = await res.json();
+  const post: DevToArticle = await res.json();
 
   return {
     title: post?.title ? `${post.title} | Tech Insights` : 'Post Not Found',
@@ -28,7 +28,7 @@ export default async function BlogPostPage({ params }: PageProps) {
     notFound();
   }
 
-  const post = await res.json();
+  const post: DevToArticle = await res.json();
 
   return (
     <article className="max-w-4xl mx-auto py-12 px-4 animate-fade-in">
@@ -42,7 +42,7 @@ export default async function BlogPostPage({ params }: PageProps) {
       
       <header className="mb-12">
         <div className="flex gap-3 mb-6">
-          {post.tags?.map((tag: string) => (
+          {post.tag_list?.map((tag: string) => (
             <span key={tag} className="text-sm font-bold text-[#6366f1] tracking-wide">#{tag}</span>
           ))}
         </div>
@@ -61,7 +61,7 @@ export default async function BlogPostPage({ params }: PageProps) {
         </p>
         
         <div className="text-slate-300 text-lg leading-loose whitespace-pre-wrap mb-16">
-          {post.body_markdown.split('\n').slice(0, 15).join('\n')}...
+          {post.body_markdown?.split('\n').slice(0, 15).join('\n') || 'No content available.'}...
         </div>
 
         <div className="bg-[#6366f1]/5 border-l-4 border-[#6366f1] p-8 rounded-r-2xl backdrop-blur-sm">

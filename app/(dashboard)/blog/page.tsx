@@ -1,13 +1,13 @@
 import React from 'react';
 import Link from 'next/link';
 import postsData from '@/data/posts.json';
-import { PostsData } from '@/types';
+import { DevToArticle } from '@/types';
 
 export const metadata = {
   title: 'Tech Insights | Dev.to Feed',
 };
 
-async function getArticles() {
+async function getArticles(): Promise<DevToArticle[]> {
   const baseUrl = process.env.DEVTO_API_URL;
   const res = await fetch(`${baseUrl}?per_page=10`, {
     next: { revalidate: 3600 }
@@ -28,7 +28,7 @@ export default async function BlogPage() {
       </section>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-        {articles.map((article: any) => (
+        {articles.map((article: DevToArticle) => (
           <Link key={article.id} href={`/blog/${article.id}`} className="group">
             <div className="h-full flex flex-col bg-slate-800/50 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden transition-all duration-300 hover:border-[#6366f1] hover:shadow-[0_0_20px_rgba(99,102,241,0.1)]">
               {article.cover_image && (

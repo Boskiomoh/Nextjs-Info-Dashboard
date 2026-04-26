@@ -11,14 +11,18 @@ export interface AuthContextType {
   isLoading: boolean;
 }
 
-export interface Post {
+export interface DevToArticle {
+  id: number;
   title: string;
-  content: string;
-  date: string;
-}
-
-export interface PostsData {
-  [key: string]: Post;
+  description: string;
+  cover_image: string | null;
+  tag_list: string[];
+  reading_time_minutes: number;
+  published_at: string;
+  body_markdown?: string;
+  user?: {
+    name: string;
+  };
 }
 
 export interface LayoutProps {
@@ -41,4 +45,5 @@ export interface ConceptCardProps {
 
 export interface PageProps {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }
