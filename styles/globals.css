@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 :root {
   --primary: #6366f1;
@@ -12,37 +13,46 @@
   --text-dim: #94a3b8;
 }
 
+/* Theme Scrollbar Utility */
+/* Theme Scrollbar Utility */
+body::-webkit-scrollbar,
+.theme-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+body::-webkit-scrollbar-track,
+.theme-scrollbar::-webkit-scrollbar-track {
+  background: #0f172a; /* bg-dark */
+  border-radius: 8px;
+}
+
+body::-webkit-scrollbar-thumb,
+.theme-scrollbar::-webkit-scrollbar-thumb {
+  background: #6366f1; /* primary */
+  border-radius: 8px;
+}
+
+body::-webkit-scrollbar-thumb:hover,
+.theme-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #a855f7; /* secondary */
+}
+
+/* For Firefox */
+body,
+.theme-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #6366f1 #0f172a;
+}
+
 /* --- MAJOR LAYOUT STYLES --- */
 
 .app-wrapper {
   min-height: 100vh;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   background-color: var(--bg-dark);
   background-image: radial-gradient(circle at 50% -20%, #1e293b, #0f172a);
   color: var(--text-main);
-}
-
-.pro-navbar {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  padding: 1.5rem 3rem;
-}
-
-.nav-container {
-  max-width: 1600px;
-  margin: 0 auto;
-  padding: 1.25rem 2rem;
-  background: var(--glass-bg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
-  border-radius: 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
 .nav-logo {

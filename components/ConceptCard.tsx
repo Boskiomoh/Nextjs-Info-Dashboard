@@ -10,65 +10,23 @@ import { ConceptCardProps } from '@/types';
  */
 const ConceptCard: React.FC<ConceptCardProps> = ({ title, description, code, tag }) => {
   return (
-    <div className="card glass">
-      {tag && <span className="tag">{tag}</span>}
-      <h3>{title}</h3>
-      <p>{description}</p>
+    <div className="pro-card group">
+      {tag && (
+        <span className="text-[10px] uppercase bg-[#6366f1] px-2 py-0.5 rounded font-bold w-fit mb-4 tracking-wider">
+          {tag}
+        </span>
+      )}
+      <h3 className="text-xl font-bold text-[#6366f1] mb-2 group-hover:text-white transition-colors">
+        {title}
+      </h3>
+      <p className="text-slate-400 text-sm leading-relaxed mb-4">
+        {description}
+      </p>
       {code && (
-        <pre>
+        <pre className="bg-black/30 p-4 rounded-xl text-xs overflow-x-auto border border-white/5 font-mono text-indigo-300">
           <code>{code}</code>
         </pre>
       )}
-
-      <style jsx>{`
-        .card {
-          padding: 1.5rem;
-          height: 100%;
-          transition: transform 0.3s ease, box-shadow 0.3s ease;
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
-        }
-
-        .card:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
-          border-color: var(--primary);
-        }
-
-        .tag {
-          font-size: 0.7rem;
-          text-transform: uppercase;
-          background: var(--primary);
-          padding: 0.2rem 0.5rem;
-          border-radius: 4px;
-          width: fit-content;
-          font-weight: 700;
-        }
-
-        h3 {
-          font-size: 1.25rem;
-          color: var(--primary);
-        }
-
-        p {
-          color: var(--text-muted);
-          font-size: 0.95rem;
-        }
-
-        pre {
-          background: rgba(0, 0, 0, 0.3);
-          padding: 1rem;
-          border-radius: 8px;
-          font-size: 0.8rem;
-          overflow-x: auto;
-          border: 1px solid var(--glass-border);
-        }
-
-        code {
-          color: #a5b4fc;
-        }
-      `}</style>
     </div>
   );
 };

@@ -42,109 +42,51 @@ const LoginPage = () => {
 
   return (
     <Layout title="Login | Next.js Study" hideNav={true}>
-      <div className="login-container">
-        <form onSubmit={handleSubmit} className="login-card glass">
-          <h2>Welcome Back</h2>
-          <p>Login to your study dashboard</p>
+      <div className="flex items-center justify-center min-h-[70vh]">
+        <form 
+          onSubmit={handleSubmit} 
+          className="w-full max-w-md p-10 bg-slate-900/40 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] shadow-2xl animate-fade-in"
+        >
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-black text-white mb-2 leading-none">Welcome Back</h2>
+            <p className="text-slate-400">Login to your study dashboard</p>
+          </div>
           
-          <div className="input-group">
-            <label>Username</label>
-            <input 
-              type="text" 
-              placeholder="e.g. NextStudent" 
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider ml-1">Username</label>
+              <input 
+                type="text" 
+                placeholder="e.g. NextStudent" 
+                className="w-full px-5 py-3.5 bg-black/20 border border-white/5 rounded-2xl text-white outline-none focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1]/50 transition-all placeholder:text-slate-600"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider ml-1">Password</label>
+              <input 
+                type="password" 
+                placeholder="••••••••" 
+                className="w-full px-5 py-3.5 bg-black/20 border border-white/5 rounded-2xl text-white outline-none focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1]/50 transition-all placeholder:text-slate-600"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
           </div>
 
-          <div className="input-group">
-            <label>Password</label>
-            <input 
-              type="password" 
-              placeholder="••••••••" 
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-
-          <button type="submit" className="login-btn" disabled={isSubmitting}>
+          <button 
+            type="submit" 
+            className="w-full mt-8 px-6 py-4 bg-[#6366f1] hover:bg-[#4f46e5] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-2xl font-bold text-lg transition-all hover:scale-[1.02] active:scale-95 shadow-xl shadow-[#6366f1]/20 border border-white/10"
+            disabled={isSubmitting}
+          >
             {isSubmitting ? 'Signing In...' : 'Sign In'}
           </button>
         </form>
       </div>
-
-      <style jsx>{`
-        .login-container {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          min-height: 60vh;
-        }
-
-        .login-card {
-          width: 100%;
-          max-width: 400px;
-          padding: 3rem;
-          text-align: center;
-        }
-
-        h2 { font-size: 2rem; margin-bottom: 0.5rem; }
-        p { color: var(--text-muted); margin-bottom: 2rem; }
-
-        .input-group {
-          text-align: left;
-          margin-bottom: 1.5rem;
-        }
-
-        label {
-          display: block;
-          margin-bottom: 0.5rem;
-          font-size: 0.9rem;
-          font-weight: 500;
-        }
-
-        input {
-          width: 100%;
-          padding: 0.75rem 1rem;
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid var(--glass-border);
-          border-radius: 8px;
-          color: white;
-          outline: none;
-          transition: all 0.3s ease;
-        }
-
-        input:focus {
-          border-color: var(--primary);
-          background: rgba(255, 255, 255, 0.1);
-        }
-
-        .login-btn {
-          width: 100%;
-          padding: 0.75rem;
-          background: var(--primary);
-          color: white;
-          border: none;
-          border-radius: 8px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          margin-top: 1rem;
-        }
-
-        .login-btn:hover:not(:disabled) {
-          background: #4f46e5;
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-        }
-
-        .login-btn:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-      `}</style>
     </Layout>
   );
 };

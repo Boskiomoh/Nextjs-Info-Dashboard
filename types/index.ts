@@ -24,6 +24,21 @@ export interface DevToArticle {
     name: string;
   };
 }
+export interface AuthState {
+  user: User | null;
+  isLoading: boolean;
+  initialized: boolean; // To track if we've checked the session already
+  login: (username: string, password: string) => Promise<boolean>;
+  logout: () => Promise<void>;
+  checkAuth: () => Promise<void>;
+}
+export interface BlogPost {
+  title: string;
+  content: string;
+  date: string;
+}
+
+export type PostsData = Record<string, BlogPost>;
 
 export interface LayoutProps {
   children: ReactNode;
@@ -46,4 +61,14 @@ export interface ConceptCardProps {
 export interface PageProps {
   params: Promise<{ id: string }>;
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+export interface CoinData {
+  id: string;
+  symbol: string;
+  name: string;
+  image: string;
+  current_price: number;
+  price_change_percentage_24h: number;
+  market_cap: number;
+  sparkline_in_7d: { price: number[] };
 }

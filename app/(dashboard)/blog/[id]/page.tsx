@@ -41,8 +41,8 @@ export default async function BlogPostPage({ params }: PageProps) {
       )}
       
       <header className="mb-12">
-        <div className="flex gap-3 mb-6">
-          {post.tag_list?.map((tag: string) => (
+        <div className="flex flex-wrap gap-3 mb-6">
+          {Array.isArray(post.tag_list) && post.tag_list.map((tag: string) => (
             <span key={tag} className="text-sm font-bold text-[#6366f1] tracking-wide">#{tag}</span>
           ))}
         </div>

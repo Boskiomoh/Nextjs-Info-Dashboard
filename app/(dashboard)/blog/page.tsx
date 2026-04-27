@@ -41,7 +41,7 @@ export default async function BlogPage() {
                 </div>
               )}
               <div className="p-6 flex flex-col flex-1">
-                <div className="flex gap-2 mb-4">
+                <div className="flex flex-wrap gap-2 mb-4">
                   {article.tag_list.slice(0, 3).map((tag: string) => (
                     <span key={tag} className="text-[10px] uppercase tracking-wider font-bold text-[#6366f1] bg-[#6366f1]/10 px-2 py-1 rounded">#{tag}</span>
                   ))}
