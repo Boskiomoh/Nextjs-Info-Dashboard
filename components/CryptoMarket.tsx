@@ -9,14 +9,40 @@ const CryptoMarket = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let ws: WebSocket | null = null;
+
     const fetchCrypto = async () => {
       try {
         const baseUrl = process.env.NEXT_PUBLIC_CRYPTO_API_URL || 'https://api.coingecko.com/api/v3/coins/markets';
-        // Fetching real crypto data from CoinGecko Public API
         const res = await fetch(`${baseUrl}?vs_currency=usd&order=market_cap_desc&per_page=10&page=1&sparkline=true`);
-        const data = await res.json();
+        const data: CoinData[] = await res.json();
         setCoins(data);
         setLoading(false);
+
+        // Once we have the coins, set up WebSocket for real-time updates
+        const streams = data.map(coin => `${coin.symbol.toLowerCase()}usdt@ticker`).join('/');
+        ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
+
+        ws.onmessage = (event) => {
+          const message = JSON.parse(event.data);
+          const { s, c, p } = message.data; // s: symbol, c: close price, p: price change percentage
+          
+          setCoins(prevCoins => prevCoins.map(coin => {
+            const binanceSymbol = `${coin.symbol.toUpperCase()}USDT`;
+            if (s === binanceSymbol) {
+              return {
+                ...coin,
+                current_price: parseFloat(c),
+                price_change_percentage_24h: parseFloat(p)
+              };
+            }
+            return coin;
+          }));
+        };
+
+        ws.onerror = (error) => {
+          console.error('WebSocket error:', error);
+        };
       } catch (error) {
         console.error('Crypto fetch failed:', error);
         setLoading(false);
@@ -24,9 +50,10 @@ const CryptoMarket = () => {
     };
 
     fetchCrypto();
-    // Simulate real-time updates every 30 seconds
-    const interval = setInterval(fetchCrypto, 30000);
-    return () => clearInterval(interval);
+
+    return () => {
+      if (ws) ws.close();
+    };
   }, []);
 
   if (loading) return (

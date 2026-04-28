@@ -10,7 +10,15 @@ export interface AuthContextType {
   logout: () => void;
   isLoading: boolean;
 }
-
+export interface SessionState {
+  currentView: string;
+  lastSearch: string;
+  isPrivacyMode: boolean;
+  setCurrentView: (view: string) => void;
+  setLastSearch: (query: string) => void;
+  togglePrivacyMode: () => void;
+  clearSession: () => void;
+}
 export interface DevToArticle {
   id: number;
   title: string;

@@ -25,7 +25,7 @@ const NavLink: React.FC<NavLinkProps> = ({ href, children }) => {
         block w-full text-left px-4 py-3 rounded-xl transition-all duration-300 font-medium
         ${isActive 
           ? 'text-[#6366f1] bg-[#6366f1]/10 shadow-[0_0_15px_rgba(99,102,241,0.2)]' 
-          : 'text-slate-400 hover:text-white hover:bg-white/5'}
+          : 'text-[var(--text-dim)] hover:text-[#6366f1] hover:bg-[#6366f1]/5 dark:hover:text-white dark:hover:bg-white/5'}
       `}
     >
       {children}

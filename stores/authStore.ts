@@ -1,15 +1,20 @@
 import { create } from 'zustand';
 import { User } from '@/types';
+import { useSessionStore } from './sessionStore';
 
 interface AuthState {
   user: User | null;
   isLoading: boolean;
-  initialized: boolean; // To track if we've checked the session already
+  initialized: boolean;
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
 }
 
+/**
+ * Auth Store: Managed via HTTP-Only Cookies for Security.
+ * This store mirrors the server-side state.
+ */
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isLoading: false,
@@ -41,15 +46,19 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api';
       await fetch(`${apiUrl}/auth/logout`, { method: 'POST' });
+      
+      // Reset Auth State
       set({ user: null });
-      // Redirect handled by component or middleware
+      
+      // Reset Session Storage (Sensitive Data)
+      useSessionStore.getState().clearSession();
+      
     } catch (error) {
       console.error('Logout error:', error);
     }
   },
 
   checkAuth: async () => {
-    // Only check if not already loading and not initialized
     set({ isLoading: true });
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api';

@@ -7,7 +7,10 @@ export const metadata = {
   description: 'Real-time trending articles from the developer community.',
 };
 
-export default function NewsPage() {
+export default async function NewsPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
+  const resolvedParams = await searchParams;
+  const currentPage = parseInt(resolvedParams.page || '1', 10);
+
   return (
     <div className="flex flex-col gap-10">
       <header className="animate-fade-in">
@@ -24,8 +27,8 @@ export default function NewsPage() {
         The rest of the page (Sidebar, Header) loads instantly.
         The NewsFeed "streams" in the moment it's ready.
       */}
-      <Suspense fallback={<NewsSkeleton />}>
-        <NewsFeed />
+      <Suspense fallback={<NewsSkeleton />} key={currentPage}>
+        <NewsFeed page={currentPage} />
       </Suspense>
     </div>
   );
