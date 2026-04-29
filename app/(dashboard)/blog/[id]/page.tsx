@@ -5,9 +5,9 @@ import { notFound } from 'next/navigation';
 
 export async function generateMetadata({ params }: PageProps) {
   const { id } = await params;
-  const baseUrl = process.env.DEVTO_API_URL;
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
   
-  const res = await fetch(`${baseUrl}/${id}`);
+  const res = await fetch(`${apiUrl}/posts/${id}`);
   const post: DevToArticle = await res.json();
 
   return {
@@ -17,10 +17,10 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function BlogPostPage({ params }: PageProps) {
   const { id } = await params;
-  const baseUrl = process.env.DEVTO_API_URL;
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
-  // Fetch with revalidation (1 hour)
-  const res = await fetch(`${baseUrl}/${id}`, {
+  // Fetch from internal API proxy with revalidation (1 hour)
+  const res = await fetch(`${apiUrl}/posts/${id}`, {
     next: { revalidate: 3600 }
   });
 

@@ -1,12 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-
-interface SettingsState {
-  theme: 'light' | 'dark';
-  sidebarCollapsed: boolean;
-  setTheme: (theme: 'light' | 'dark') => void;
-  toggleSidebar: () => void;
-}
+import { SettingsState } from '@/types';
 
 export const useSettingsStore = create<SettingsState>()(
   persist(

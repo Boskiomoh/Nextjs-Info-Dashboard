@@ -6,13 +6,14 @@ import { SessionState } from '@/types';
 export const useSessionStore = create<SessionState>()(
   persist(
     (set) => ({
-      currentView: 'dashboard',
-      lastSearch: '',
-      isPrivacyMode: false,
-      setCurrentView: (view) => set({ currentView: view }),
-      setLastSearch: (query) => set({ lastSearch: query }),
-      togglePrivacyMode: () => set((state) => ({ isPrivacyMode: !state.isPrivacyMode })),
-      clearSession: () => set({ currentView: 'dashboard', lastSearch: '', isPrivacyMode: false }),
+      secureNote: '',
+      tempApiKey: '',
+      setSecureNote: (note) => set({ secureNote: note }),
+      setTempApiKey: (key) => set({ tempApiKey: key }),
+      clearSession: () => set({ 
+        secureNote: '',
+        tempApiKey: ''
+      }),
     }),
     {
       name: 'app-session', // name of the item in the storage

@@ -11,12 +11,10 @@ export interface AuthContextType {
   isLoading: boolean;
 }
 export interface SessionState {
-  currentView: string;
-  lastSearch: string;
-  isPrivacyMode: boolean;
-  setCurrentView: (view: string) => void;
-  setLastSearch: (query: string) => void;
-  togglePrivacyMode: () => void;
+  secureNote: string;
+  tempApiKey: string;
+  setSecureNote: (note: string) => void;
+  setTempApiKey: (key: string) => void;
   clearSession: () => void;
 }
 export interface DevToArticle {
@@ -57,8 +55,14 @@ export interface LayoutProps {
 export interface NavLinkProps {
   href: string;
   children: ReactNode;
+  collapsed?: boolean;
 }
-
+export interface SettingsState {
+  theme: 'light' | 'dark';
+  sidebarCollapsed: boolean;
+  setTheme: (theme: 'light' | 'dark') => void;
+  toggleSidebar: () => void;
+}
 export interface ConceptCardProps {
   title: string;
   description: string;

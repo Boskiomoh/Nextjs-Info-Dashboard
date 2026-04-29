@@ -3,11 +3,11 @@ import Link from 'next/link';
 import { DevToArticle } from '@/types';
 
 const NewsFeed = async ({ page = 1 }: { page?: number }) => {
-  const baseUrl = process.env.DEVTO_API_URL || 'https://dev.to/api/articles';
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
   const perPage = 3;
   
-  // Fetch with pagination
-  const res = await fetch(`${baseUrl}?per_page=${perPage}&page=${page}&top=7`, {
+  // PROXY FETCH (Hidden behind your server)
+  const res = await fetch(`${apiUrl}/news?per_page=${perPage}&page=${page}`, {
     next: { revalidate: 600 } 
   });
 

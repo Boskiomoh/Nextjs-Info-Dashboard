@@ -13,7 +13,7 @@ import { NavLinkProps } from '@/types';
  * URL in your browser. If the URL matches the link's destination (href), 
  * it adds an "active" class so we can style it differently (e.g., make it purple).
  */
-const NavLink: React.FC<NavLinkProps> = ({ href, children }) => {
+const NavLink: React.FC<NavLinkProps> = ({ href, children, collapsed }) => {
   const pathname = usePathname();
 
   const isActive = pathname === href;
@@ -22,7 +22,8 @@ const NavLink: React.FC<NavLinkProps> = ({ href, children }) => {
     <Link 
       href={href} 
       className={`
-        block w-full text-left px-4 py-3 rounded-xl transition-all duration-300 font-medium
+        block w-full rounded-xl transition-all duration-300 font-medium
+        ${collapsed ? 'text-center px-0 py-3' : 'text-left px-4 py-3'}
         ${isActive 
           ? 'text-[#6366f1] bg-[#6366f1]/10 shadow-[0_0_15px_rgba(99,102,241,0.2)]' 
           : 'text-[var(--text-dim)] hover:text-[#6366f1] hover:bg-[#6366f1]/5 dark:hover:text-white dark:hover:bg-white/5'}

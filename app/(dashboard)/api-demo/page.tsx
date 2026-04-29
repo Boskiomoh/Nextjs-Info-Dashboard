@@ -3,20 +3,34 @@
 import React, { useState } from 'react';
 import ConceptCard from '@/components/ConceptCard';
 import { toast } from 'sonner';
+import { useSessionStore } from '@/stores/sessionStore';
 
 export default function ApiDemoPage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const { tempApiKey } = useSessionStore();
 
   const fetchApi = async () => {
     setLoading(true);
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api';
-      const res = await fetch(`${apiUrl}/hello`);
+      const res = await fetch(`${apiUrl}/hello`, {
+        headers: {
+          'X-Temp-Key': tempApiKey || 'none'
+        }
+      });
       const json = await res.json();
-      setData(json);
+      
+      // Simulating a more interesting response if a key is present
+      const enhancedData = {
+        ...json,
+        session_security: tempApiKey ? '🔐 Authorized via Session Token' : '⚠️ No Session Token Found',
+        sent_header: tempApiKey ? `Bearer ${tempApiKey.substring(0, 4)}...` : 'None'
+      };
+      
+      setData(enhancedData);
       toast.success("API Response Received", {
-        description: `Successfully fetched data from your custom endpoint`
+        description: tempApiKey ? "Authenticated request successful!" : "Unauthenticated request successful!"
       });
     } catch (e) {
       console.error(e);
