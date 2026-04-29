@@ -1,20 +1,9 @@
 import { create } from 'zustand';
 import { User } from '@/types';
-import { useSessionStore } from './sessionStore';
+import { AuthState } from '@/types';
 
-interface AuthState {
-  user: User | null;
-  isLoading: boolean;
-  initialized: boolean;
-  login: (username: string, password: string) => Promise<boolean>;
-  logout: () => Promise<void>;
-  checkAuth: () => Promise<void>;
-}
 
-/**
- * Auth Store: Managed via HTTP-Only Cookies for Security.
- * This store mirrors the server-side state.
- */
+
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isLoading: false,
@@ -23,8 +12,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   login: async (username, password) => {
     set({ isLoading: true });
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api';
-      const response = await fetch(`${apiUrl}/auth/login`, {
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
@@ -44,25 +32,19 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   logout: async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api';
-      await fetch(`${apiUrl}/auth/logout`, { method: 'POST' });
-      
-      // Reset Auth State
+      await fetch('/api/auth/logout', { method: 'POST' });
       set({ user: null });
-      
-      // Reset Session Storage (Sensitive Data)
-      useSessionStore.getState().clearSession();
-      
+      // Redirect handled by component or middleware
     } catch (error) {
       console.error('Logout error:', error);
     }
   },
 
   checkAuth: async () => {
+    // Only check if not already loading and not initialized
     set({ isLoading: true });
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api';
-      const response = await fetch(`${apiUrl}/auth/me`);
+      const response = await fetch('/api/auth/me');
       if (response.ok) {
         const data = await response.json();
         set({ user: data.user });
