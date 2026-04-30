@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import postsData from '@/data/posts.json';
-import { PostsData } from '@/types';
+
 
 export async function GET(
   request: Request,

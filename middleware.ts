@@ -7,7 +7,7 @@ import type { NextRequest } from 'next/server';
  * It is the most secure place to handle redirects because it 
  * operates at the "Gateway" level. 
  */
-export default function proxy(request: NextRequest) {
+export default function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // 1. Get the auth token from cookies
@@ -16,7 +16,10 @@ export default function proxy(request: NextRequest) {
   // 2. Define our Public vs Protected rules
   const isLoginPage = pathname === '/login';
   const isPublicApi = pathname.startsWith('/api/auth');
-  const isStaticAsset = pathname.startsWith('/_next') || pathname.includes('.');
+  const isStaticAsset = 
+    pathname.startsWith('/_next') || 
+    pathname.startsWith('/favicon.ico') ||
+    pathname.includes('.');
 
   // Rule A: If logged in and trying to access Login page -> Go to Dashboard
   if (token && isLoginPage) {
@@ -32,8 +35,7 @@ export default function proxy(request: NextRequest) {
   return NextResponse.next();
 }
 
-// Optimization: Tell Next.js to only run this on specific routes if desired
-// Here we run it on everything to stay safe by default (Zero Trust)
+// Optimization: Tell Next.js to only run this on specific routes
 export const config = {
   matcher: [
     /*

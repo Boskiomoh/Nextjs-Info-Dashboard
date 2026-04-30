@@ -1,15 +1,16 @@
 import React from 'react';
 import Link from 'next/link';
-import postsData from '@/data/posts.json';
+
 import { DevToArticle } from '@/types';
 
 export const metadata = {
   title: 'Tech Insights | Dev.to Feed',
 };
 
-async function getArticles(): Promise<DevToArticle[]> {
-  const baseUrl = process.env.DEVTO_API_URL;
-  const res = await fetch(`${baseUrl}?per_page=10`, {
+async function getArticles({ page = 1, perPage = 3 }: { page?: number; perPage?: number } = {}): Promise<DevToArticle[]> {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+  // Use our internal proxy /api/news which handles the Dev.to API call
+  const res = await fetch(`${apiUrl}/news?per_page=${perPage}&page=${page}`, {
     next: { revalidate: 3600 }
   });
   
@@ -17,8 +18,12 @@ async function getArticles(): Promise<DevToArticle[]> {
   return res.json();
 }
 
-export default async function BlogPage() {
-  const articles = await getArticles();
+export default async function BlogPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
+  const resolvedParams = await searchParams;
+  const currentPage = parseInt(resolvedParams.page || '1', 10);
+  const perPage = 3; // Matching the grid layout (2 rows of 3)
+  const articles = await getArticles({ page: currentPage, perPage });
+  const isLastPage = articles.length < perPage;
 
   return (
     <div className="py-8 flex flex-col items-center">
@@ -27,7 +32,7 @@ export default async function BlogPage() {
         <p className="text-slate-400 text-xl font-medium">Real-time developer articles fetched from the Dev.to API.</p>
       </section>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mb-12 w-full max-w-7xl">
         {articles.map((article: DevToArticle) => (
           <Link key={article.id} href={`/blog/${article.id}`} className="group">
             <div className="h-full flex flex-col bg-slate-800/50 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden transition-all duration-300 hover:border-[#6366f1] hover:shadow-[0_0_20px_rgba(99,102,241,0.1)]">
@@ -56,6 +61,53 @@ export default async function BlogPage() {
             </div>
           </Link>
         ))}
+      </div>
+
+      {/* Spreading out the Pagination Controls */}
+      <div className="flex justify-center items-center gap-3">
+        {currentPage > 1 && (
+          <Link 
+            href={`/blog?page=${currentPage - 1}`}
+            className="w-10 h-10 flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-all border border-white/5 hover:border-[#6366f1]/50"
+            title="Previous Page"
+          >
+            ←
+          </Link>
+        )}
+        
+        {(() => {
+          const range = [];
+          const start = Math.max(1, currentPage - 2);
+          const end = isLastPage ? currentPage : currentPage + 2;
+          
+          for (let i = start; i <= end; i++) {
+            range.push(i);
+          }
+
+          return range.map((p) => (
+            <Link
+              key={p}
+              href={`/blog?page=${p}`}
+              className={`w-10 h-10 flex items-center justify-center rounded-xl font-bold transition-all border ${
+                currentPage === p 
+                  ? 'bg-[#6366f1] text-white border-[#6366f1] shadow-[0_0_20px_rgba(99,102,241,0.4)]' 
+                  : 'bg-slate-800 text-slate-400 border-white/5 hover:border-[#6366f1]/50 hover:text-white'
+              }`}
+            >
+              {p}
+            </Link>
+          ));
+        })()}
+
+        {!isLastPage && (
+          <Link 
+            href={`/blog?page=${currentPage + 1}`}
+            className="w-10 h-10 flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-all border border-white/5 hover:border-[#6366f1]/50"
+            title="Next Page"
+          >
+            →
+          </Link>
+        )}
       </div>
     </div>
   );

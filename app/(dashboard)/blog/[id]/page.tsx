@@ -1,5 +1,5 @@
 import React from 'react';
-import postsData from '@/data/posts.json';
+
 import { DevToArticle, PageProps } from '@/types';
 import { notFound } from 'next/navigation';
 

@@ -149,7 +149,7 @@ const CryptoMarket = () => {
       <div className="bg-[#6366f1]/5 border border-[#6366f1]/20 p-6 rounded-3xl flex items-start gap-4">
         <div className="text-2xl">🧠</div>
         <div>
-           <h4 className="font-bold text-[#6366f1] mb-1 text-sm uppercase tracking-wider">How is this "Heavy"?</h4>
+           <h4 className="font-bold text-[#6366f1] mb-1 text-sm uppercase tracking-wider">How is this &quot;Heavy&quot;?</h4>
            <p className="text-slate-400 text-xs leading-relaxed">
              This component manages real-time intervals, complex SVG math for sparklines, 
              and external API states. By lazy loading it, your initial dashboard bundle 

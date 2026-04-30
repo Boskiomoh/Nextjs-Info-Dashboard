@@ -79,7 +79,7 @@ const NewsFeed = async ({ page = 1 }: { page?: number }) => {
             range.push(i);
           }
 
-          return range.map((p, i) => {
+          return range.map((p) => {
             const pageNum = p as number;
             return (
               <Link

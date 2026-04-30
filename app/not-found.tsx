@@ -12,7 +12,7 @@ export default function NotFound() {
           404
         </h1>
         <p className="text-2xl text-slate-400 mt-4 mb-8 max-w-md">
-          This page hasn't been built in the curriculum yet!
+          This page hasn&apos;t been built in the curriculum yet!
         </p>
         <Link 
           href="/" 

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { ReactNode } from 'react';
+import React from 'react';
 import NavLink from '@/components/NavLink';
 import { toast } from 'sonner';
 import { LayoutProps } from '@/types';
@@ -17,7 +17,7 @@ import { useSettingsStore } from '@/stores/settingsStore';
 import { useSessionStore } from '@/stores/sessionStore';
 import { useRouter } from 'next/navigation';
 
-const Layout: React.FC<LayoutProps> = ({ children, title = 'Next.js Study Portal', hideNav = false }) => {
+const Layout: React.FC<LayoutProps> = ({ children, hideNav = false }) => {
   const { user, logout, isLoading } = useAuthStore();
   const { 
     theme, setTheme, sidebarCollapsed, toggleSidebar 
@@ -31,6 +31,7 @@ const Layout: React.FC<LayoutProps> = ({ children, title = 'Next.js Study Portal
 
   // Hydration guard for persistent stores
   React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 

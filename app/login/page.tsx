@@ -32,7 +32,7 @@ const LoginPage = () => {
         });
         setIsSubmitting(false);
       }
-    } catch (error) {
+    } catch {
       toast.error('Error', {
         description: 'Something went wrong. Please try again.',
       });

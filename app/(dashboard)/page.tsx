@@ -1,5 +1,5 @@
 import React from 'react';
-import ConceptCard from '@/components/ConceptCard';
+
 
 export default function Home() {
   return (
