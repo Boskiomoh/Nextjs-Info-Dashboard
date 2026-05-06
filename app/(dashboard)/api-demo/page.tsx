@@ -13,22 +13,14 @@ export default function ApiDemoPage() {
   const fetchApi = async () => {
     setLoading(true);
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api';
-      const res = await fetch(`${apiUrl}/hello`, {
+      const res = await fetch('/api/hello', {
         headers: {
           'X-Temp-Key': tempApiKey || 'none'
         }
       });
       const json = await res.json();
       
-      // Simulating a more interesting response if a key is present
-      const enhancedData = {
-        ...json,
-        session_security: tempApiKey ? '🔐 Authorized via Session Token' : '⚠️ No Session Token Found',
-        sent_header: tempApiKey ? `Bearer ${tempApiKey.substring(0, 4)}...` : 'None'
-      };
-      
-      setData(enhancedData);
+      setData(json);
       toast.success("API Response Received", {
         description: tempApiKey ? "Authenticated request successful!" : "Unauthenticated request successful!"
       });

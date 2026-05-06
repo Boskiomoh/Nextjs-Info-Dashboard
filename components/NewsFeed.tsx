@@ -1,21 +1,53 @@
-import React from 'react';
+'use client'
+
+import React, { useState, useEffect } from 'react';
+import { API_CONFIG } from '@/lib/api-urls';
 import Link from 'next/link';
 import { DevToArticle } from '@/types';
 
-const NewsFeed = async ({ page = 1 }: { page?: number }) => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+const NewsFeed = ({ page = 1 }: { page?: number }) => {
   const perPage = 3;
-  
-  // PROXY FETCH (Hidden behind your server)
-  const res = await fetch(`${apiUrl}/news?per_page=${perPage}&page=${page}`, {
-    next: { revalidate: 600 } 
-  });
+  const [articles, setArticles] = useState<DevToArticle[]>([]);
+  const [isLastPage, setIsLastPage] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  if (!res.ok) return <p className="text-red-400">Failed to load news.</p>;
+  useEffect(() => {
+    const loadNews = async () => {
+      setLoading(true);
+      setError(false);
+      try {
+        const domain = API_CONFIG.getInternalBaseUrl();
+        // STYLE: Automatically uses relative path in browser, absolute on server
+        const res = await fetch(`${domain}/api/news?per_page=${perPage}&page=${page}`);
+        
+        if (!res.ok) throw new Error('Failed to fetch news');
+        const data = await res.json();
+        
+        setArticles(data);
+        setIsLastPage(data.length < perPage);
+      } catch (err) {
+        console.error('NewsFeed error:', err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const articles: DevToArticle[] = await res.json();
-  const isLastPage = articles.length < perPage;
+    loadNews();
+  }, [page]);
 
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="h-80 bg-slate-800/50 rounded-2xl border border-white/5" />
+        ))}
+      </div>
+    );
+  }
+
+  if (error) return <p className="text-red-400 font-bold">Failed to load news. Check console for details.</p>;
   return (
     <div className="space-y-12">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -58,6 +90,16 @@ const NewsFeed = async ({ page = 1 }: { page?: number }) => {
 
       {/* Numbered Pagination Controls */}
       <div className="flex justify-center items-center gap-2">
+        {/* {page > 1 && (
+          <Link 
+            href={`/news?page=1`}
+            className="px-4 h-10 flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-[#6366f1] rounded-xl font-black text-[10px] uppercase tracking-widest transition-all border border-white/5 hover:border-[#6366f1]/50"
+            title="First Page"
+          >
+            First
+          </Link>
+        )} */}
+
         {page > 1 && (
           <Link 
             href={`/news?page=${page - 1}`}
@@ -106,6 +148,18 @@ const NewsFeed = async ({ page = 1 }: { page?: number }) => {
             →
           </Link>
         )}
+
+        <button 
+          disabled={!isLastPage}
+          className={`px-4 h-10 flex items-center justify-center rounded-xl font-black text-[10px] uppercase tracking-widest transition-all border ${
+            isLastPage 
+            ? 'bg-[#6366f1] text-white border-[#6366f1] shadow-[0_0_20px_rgba(99,102,241,0.4)]' 
+            : 'bg-slate-800 text-slate-500 border-white/5 opacity-50 cursor-not-allowed'
+          }`}
+          title={isLastPage ? "You are on the Last Page" : "End of data not reached yet"}
+        >
+          Last
+        </button>
       </div>
     </div>
   );

@@ -1,13 +1,12 @@
 import React from 'react';
-
+import { API_CONFIG } from '@/lib/api-urls';
 import { DevToArticle, PageProps } from '@/types';
 import { notFound } from 'next/navigation';
 
 export async function generateMetadata({ params }: PageProps) {
   const { id } = await params;
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
-  
-  const res = await fetch(`${apiUrl}/posts/${id}`);
+  const domain = API_CONFIG.getInternalBaseUrl();
+  const res = await fetch(`${domain}/api/posts/${id}`);
   const post: DevToArticle = await res.json();
 
   return {
@@ -17,10 +16,8 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function BlogPostPage({ params }: PageProps) {
   const { id } = await params;
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
-
-  // Fetch from internal API proxy with revalidation (1 hour)
-  const res = await fetch(`${apiUrl}/posts/${id}`, {
+  const domain = API_CONFIG.getInternalBaseUrl();
+  const res = await fetch(`${domain}/api/posts/${id}`, {
     next: { revalidate: 3600 }
   });
 

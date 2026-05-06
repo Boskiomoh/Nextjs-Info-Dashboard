@@ -27,6 +27,8 @@ const Layout: React.FC<LayoutProps> = ({ children, hideNav = false }) => {
     tempApiKey, setTempApiKey 
   } = useSessionStore();
   const [mounted, setMounted] = React.useState(false);
+  const [showApiKey, setShowApiKey] = React.useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = React.useState(false);
   const router = useRouter();
 
   // Hydration guard for persistent stores
@@ -80,13 +82,27 @@ const Layout: React.FC<LayoutProps> = ({ children, hideNav = false }) => {
                   
                   <div className="flex flex-col gap-1">
                     <label className="text-[9px] font-bold text-slate-500 uppercase">Temp API Key</label>
-                    <input 
-                      type="password"
-                      value={tempApiKey}
-                      onChange={(e) => setTempApiKey(e.target.value)}
-                      placeholder="Bearer..."
-                      className="bg-slate-800/50 border border-white/5 rounded px-2 py-1 text-[10px] text-emerald-400 focus:outline-none focus:border-emerald-500/50"
-                    />
+                    <div className="relative flex items-center group">
+                      <input 
+                        type={showApiKey ? "text" : "password"}
+                        value={tempApiKey}
+                        onChange={(e) => setTempApiKey(e.target.value)}
+                        placeholder="Bearer..."
+                        className="w-full bg-slate-800/50 border border-white/5 rounded px-2 py-1 pr-7 text-[10px] text-emerald-400 focus:outline-none focus:border-emerald-500/50 transition-all"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowApiKey(!showApiKey)}
+                        className="absolute right-2 text-slate-500 hover:text-emerald-400 transition-colors p-0.5 rounded-sm hover:bg-white/5"
+                        title={showApiKey ? "Hide API Key" : "Show API Key"}
+                      >
+                        {showApiKey ? (
+                          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.52 13.52 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+                        ) : (
+                          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                        )}
+                      </button>
+                    </div>
                   </div>
 
                   <div className="flex flex-col gap-1">
@@ -128,11 +144,7 @@ const Layout: React.FC<LayoutProps> = ({ children, hideNav = false }) => {
                   <span className="text-sm font-bold text-[#6366f1] truncate">{user.username}</span>
                 </div>
                 <button 
-                  onClick={async () => {
-                    await logout();
-                    toast.info("Logged out successfully");
-                    router.push('/login');
-                  }} 
+                  onClick={() => setIsLogoutModalOpen(true)} 
                   className="btn-logout w-full text-center text-xs"
                 >
                   {sidebarCollapsed ? '🚪' : 'Logout'}
@@ -143,6 +155,46 @@ const Layout: React.FC<LayoutProps> = ({ children, hideNav = false }) => {
             )}
           </div>
         </aside>
+      )}
+
+      {/* LOGOUT CONFIRMATION MODAL */}
+      {isLogoutModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div 
+            className="absolute inset-0 bg-slate-950/40 backdrop-blur-md animate-fade-in"
+            onClick={() => setIsLogoutModalOpen(false)}
+          />
+          <div className="relative bg-[#1e293b] border border-white/10 rounded-3xl p-8 max-w-sm w-full shadow-2xl animate-scale-in">
+            <div className="text-center space-y-4">
+              <div className="w-16 h-16 bg-rose-500/10 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-rose-500/20">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              </div>
+              <h3 className="text-xl font-black text-white">Sign Out?</h3>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                Are you sure you want to log out? Your current session vault will be cleared for security.
+              </p>
+              <div className="flex gap-3 pt-4">
+                <button 
+                  onClick={() => setIsLogoutModalOpen(false)}
+                  className="flex-1 px-4 py-3 rounded-2xl bg-white/5 text-white text-sm font-bold hover:bg-white/10 transition-colors border border-white/5"
+                >
+                  Stay
+                </button>
+                <button 
+                  onClick={async () => {
+                    await logout();
+                    setIsLogoutModalOpen(false);
+                    toast.info("Logged out successfully");
+                    router.push('/login');
+                  }}
+                  className="flex-1 px-4 py-3 rounded-2xl bg-rose-600 text-white text-sm font-bold hover:bg-rose-500 transition-all shadow-lg shadow-rose-900/20 border border-rose-500/50"
+                >
+                  Logout
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       <div className="flex-1 flex flex-col min-w-0">

@@ -13,8 +13,7 @@ const CryptoMarket = () => {
 
     const fetchCrypto = async () => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api';
-        const res = await fetch(`${apiUrl}/crypto`);
+        const res = await fetch('/api/crypto');
         const data: CoinData[] = await res.json();
         setCoins(data);
         setLoading(false);
@@ -25,7 +24,7 @@ const CryptoMarket = () => {
 
         ws.onmessage = (event) => {
           const message = JSON.parse(event.data);
-          const { s, c, p } = message.data; // s: symbol, c: close price, p: price change percentage
+          const { s, c, P } = message.data; // s: symbol, c: close price, P: price change percentage
           
           setCoins(prevCoins => prevCoins.map(coin => {
             const binanceSymbol = `${coin.symbol.toUpperCase()}USDT`;
@@ -33,7 +32,7 @@ const CryptoMarket = () => {
               return {
                 ...coin,
                 current_price: parseFloat(c),
-                price_change_percentage_24h: parseFloat(p)
+                price_change_percentage_24h: parseFloat(P)
               };
             }
             return coin;

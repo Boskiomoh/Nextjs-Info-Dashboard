@@ -1,16 +1,14 @@
-import React from 'react';
+import { API_CONFIG } from '@/lib/api-urls';
 import Link from 'next/link';
-
 import { DevToArticle } from '@/types';
 
 export const metadata = {
   title: 'Tech Insights | Dev.to Feed',
 };
 
-async function getArticles({ page = 1, perPage = 3 }: { page?: number; perPage?: number } = {}): Promise<DevToArticle[]> {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
-  // Use our internal proxy /api/news which handles the Dev.to API call
-  const res = await fetch(`${apiUrl}/news?per_page=${perPage}&page=${page}`, {
+async function getArticles(page = 1, perPage = 3): Promise<DevToArticle[]> {
+  const domain = API_CONFIG.getInternalBaseUrl();
+  const res = await fetch(`${domain}/api/news?per_page=${perPage}&page=${page}`, {
     next: { revalidate: 3600 }
   });
   
@@ -22,7 +20,7 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
   const resolvedParams = await searchParams;
   const currentPage = parseInt(resolvedParams.page || '1', 10);
   const perPage = 3; // Matching the grid layout (2 rows of 3)
-  const articles = await getArticles({ page: currentPage, perPage });
+  const articles = await getArticles(currentPage, perPage);
   const isLastPage = articles.length < perPage;
 
   return (
@@ -67,6 +65,16 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
       <div className="flex justify-center items-center gap-3">
         {currentPage > 1 && (
           <Link 
+            href={`/blog?page=1`}
+            className="px-4 h-10 flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-[#6366f1] rounded-xl font-black text-[10px] uppercase tracking-widest transition-all border border-white/5 hover:border-[#6366f1]/50"
+            title="First Page"
+          >
+            First
+          </Link>
+        )}
+
+        {currentPage > 1 && (
+          <Link 
             href={`/blog?page=${currentPage - 1}`}
             className="w-10 h-10 flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold transition-all border border-white/5 hover:border-[#6366f1]/50"
             title="Previous Page"
@@ -108,6 +116,18 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
             →
           </Link>
         )}
+
+        <button 
+          disabled={!isLastPage}
+          className={`px-4 h-10 flex items-center justify-center rounded-xl font-black text-[10px] uppercase tracking-widest transition-all border ${
+            isLastPage 
+            ? 'bg-[#6366f1] text-white border-[#6366f1] shadow-[0_0_20px_rgba(99,102,241,0.4)]' 
+            : 'bg-slate-800 text-slate-500 border-white/5 opacity-50 cursor-not-allowed'
+          }`}
+          title={isLastPage ? "You are on the Last Page" : "End of data not reached yet"}
+        >
+          Last
+        </button>
       </div>
     </div>
   );
