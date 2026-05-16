@@ -17,8 +17,8 @@ export const API_CONFIG = {
   // 2. Dev.to External API Switcher
   getDevToUrl: () => {
     return process.env.NODE_ENV === 'development'
-      ? process.env.DEVTO_API_URL || 'https://dev.to/api/articles'
-      : process.env.DEVTO_PROD_API_URL || 'https://dev.to/api/articles';
+      ? process.env.DEVTO_API_URL 
+      : process.env.DEVTO_PROD_API_URL ;
   },
 
   // 3. Crypto API (Since it's the same for both usually)

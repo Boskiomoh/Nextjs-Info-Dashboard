@@ -68,6 +68,7 @@ const Layout: React.FC<LayoutProps> = ({ children, hideNav = false }) => {
                 <li><NavLink href="/ssr-vs-csr" collapsed={sidebarCollapsed}>{sidebarCollapsed ? '⚡' : 'SSR/CSR'}</NavLink></li>
                 <li><NavLink href="/lazy-loading" collapsed={sidebarCollapsed}>{sidebarCollapsed ? '💤' : 'Lazy Loading'}</NavLink></li>
                 <li><NavLink href="/deployment" collapsed={sidebarCollapsed}>{sidebarCollapsed ? '🚀' : 'Deployment'}</NavLink></li>
+                <li><NavLink href="/support" collapsed={sidebarCollapsed}>{sidebarCollapsed ? '🎧' : 'Support'}</NavLink></li>
               </ul>
             </nav>
           </div>

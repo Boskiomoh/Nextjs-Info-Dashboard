@@ -11,7 +11,7 @@ async function getArticles(page = 1, perPage = 3): Promise<DevToArticle[]> {
   const res = await fetch(`${domain}/api/news?per_page=${perPage}&page=${page}`, {
     next: { revalidate: 3600 }
   });
-  
+
   if (!res.ok) throw new Error('Failed to fetch articles');
   return res.json();
 }
