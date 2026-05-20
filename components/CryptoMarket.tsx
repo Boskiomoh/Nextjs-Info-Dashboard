@@ -1,73 +1,98 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-
+import { useQuery } from '@tanstack/react-query';
 import { CoinData } from '@/types';
 
+async function fetchCoins(): Promise<CoinData[]> {
+  const res = await fetch('/api/crypto');
+  if (!res.ok) throw new Error('Failed to fetch crypto data');
+  return res.json();
+}
+
 const CryptoMarket = () => {
-  const [coins, setCoins] = useState<CoinData[]>([]);
-  const [loading, setLoading] = useState(true);
+  // TanStack Query: cached for 30s, background-refreshed every 60s
+  const { data: coins = [], isLoading, isError } = useQuery({
+    queryKey: ['crypto'],
+    queryFn: fetchCoins,
+    staleTime: 1000 * 30,        // serve from cache if data is < 30s old
+    refetchInterval: 1000 * 60,  // silently refetch in background every 60s
+  });
 
+  // Local state for WebSocket live price overlays on top of cached baseline data
+  const [liveCoins, setLiveCoins] = useState<CoinData[]>([]);
+
+  // Seed liveCoins whenever the query data updates
   useEffect(() => {
-    let ws: WebSocket | null = null;
+    if (coins.length > 0) setLiveCoins(coins);
+  }, [coins]);
 
-    const fetchCrypto = async () => {
-      try {
-        const res = await fetch('/api/crypto');
-        const data: CoinData[] = await res.json();
-        setCoins(data);
-        setLoading(false);
+  // WebSocket: opens once we have the initial coin list from the query
+  useEffect(() => {
+    if (coins.length === 0) return;
 
-        // Once we have the coins, set up WebSocket for real-time updates
-        const streams = data.map(coin => `${coin.symbol.toLowerCase()}usdt@ticker`).join('/');
-        ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
+    const streams = coins
+      .map((coin) => `${coin.symbol.toLowerCase()}usdt@ticker`)
+      .join('/');
+    const ws = new WebSocket(
+      `wss://stream.binance.com:9443/stream?streams=${streams}`
+    );
 
-        ws.onmessage = (event) => {
-          const message = JSON.parse(event.data);
-          const { s, c, P } = message.data; // s: symbol, c: close price, P: price change percentage
-          
-          setCoins(prevCoins => prevCoins.map(coin => {
-            const binanceSymbol = `${coin.symbol.toUpperCase()}USDT`;
-            if (s === binanceSymbol) {
-              return {
-                ...coin,
-                current_price: parseFloat(c),
-                price_change_percentage_24h: parseFloat(P)
-              };
-            }
-            return coin;
-          }));
-        };
+    ws.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      const { s, c, P } = message.data; // s: symbol, c: close price, P: % change
 
-        ws.onerror = (error) => {
-          console.error('WebSocket error:', error);
-        };
-      } catch (error) {
-        console.error('Crypto fetch failed:', error);
-        setLoading(false);
-      }
+      setLiveCoins((prev) =>
+        prev.map((coin) => {
+          const binanceSymbol = `${coin.symbol.toUpperCase()}USDT`;
+          if (s === binanceSymbol) {
+            return {
+              ...coin,
+              current_price: parseFloat(c),
+              price_change_percentage_24h: parseFloat(P),
+            };
+          }
+          return coin;
+        })
+      );
     };
 
-    fetchCrypto();
-
-    return () => {
-      if (ws) ws.close();
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
     };
-  }, []);
 
-  if (loading) return (
-    <div className="flex flex-col items-center justify-center p-20 space-y-4">
-      <div className="w-12 h-12 border-4 border-[#6366f1] border-t-transparent rounded-full animate-spin"></div>
-      <p className="text-[#6366f1] font-bold animate-pulse">Connecting to Blockchain API...</p>
-    </div>
-  );
+    return () => ws.close();
+  }, [coins]);
+
+  if (isLoading)
+    return (
+      <div className="flex flex-col items-center justify-center p-20 space-y-4">
+        <div className="w-12 h-12 border-4 border-[#6366f1] border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-[#6366f1] font-bold animate-pulse">
+          Connecting to Blockchain API...
+        </p>
+      </div>
+    );
+
+  if (isError)
+    return (
+      <p className="text-red-400 font-bold p-8 text-center">
+        Failed to load crypto data. Please try again later.
+      </p>
+    );
+
+  const displayCoins = liveCoins.length > 0 ? liveCoins : coins;
 
   return (
     <div className="animate-fade-in space-y-6">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h2 className="text-3xl font-black text-white leading-none mb-2">Live Market Data</h2>
-          <p className="text-slate-400 text-sm italic">Real-time prices from CoinGecko API</p>
+          <h2 className="text-3xl font-black text-white leading-none mb-2">
+            Live Market Data
+          </h2>
+          <p className="text-slate-400 text-sm italic">
+            Real-time prices from CoinGecko API
+          </p>
         </div>
         <div className="px-4 py-2 bg-emerald-500/10 text-emerald-500 rounded-full text-xs font-bold flex items-center gap-2 border border-emerald-500/20">
           <span className="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></span>
@@ -87,7 +112,7 @@ const CryptoMarket = () => {
             </tr>
           </thead>
           <tbody>
-            {coins.map((coin) => {
+            {displayCoins.map((coin) => {
               const priceChange = coin.price_change_percentage_24h ?? 0;
               const currentPrice = coin.current_price ?? 0;
               const marketCap = coin.market_cap ?? 0;
@@ -114,29 +139,29 @@ const CryptoMarket = () => {
                     ${(marketCap / 1000000000).toFixed(2)}B
                   </td>
                   <td className="px-6 py-5">
-                     <div className="flex justify-center">
-                       {sparklineData.length > 0 ? (
-                         <svg width="100" height="30" className="opacity-80">
-                            <polyline
-                              fill="none"
-                              stroke={priceChange >= 0 ? '#10b981' : '#f43f5e'}
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              points={sparklineData.map((p, i) => {
-                                const min = Math.min(...sparklineData);
-                                const max = Math.max(...sparklineData);
-                                const range = max - min || 1;
-                                const x = (i / (sparklineData.length - 1)) * 100;
-                                const y = 30 - ((p - min) / range) * 25 - 2;
-                                return `${x},${y}`;
-                              }).join(' ')}
-                            />
-                         </svg>
-                       ) : (
-                         <span className="text-slate-600 text-xs italic">No trend data</span>
-                       )}
-                     </div>
+                    <div className="flex justify-center">
+                      {sparklineData.length > 0 ? (
+                        <svg width="100" height="30" className="opacity-80">
+                          <polyline
+                            fill="none"
+                            stroke={priceChange >= 0 ? '#10b981' : '#f43f5e'}
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            points={sparklineData.map((p, i) => {
+                              const min = Math.min(...sparklineData);
+                              const max = Math.max(...sparklineData);
+                              const range = max - min || 1;
+                              const x = (i / (sparklineData.length - 1)) * 100;
+                              const y = 30 - ((p - min) / range) * 25 - 2;
+                              return `${x},${y}`;
+                            }).join(' ')}
+                          />
+                        </svg>
+                      ) : (
+                        <span className="text-slate-600 text-xs italic">No trend data</span>
+                      )}
+                    </div>
                   </td>
                 </tr>
               );
@@ -148,12 +173,12 @@ const CryptoMarket = () => {
       <div className="bg-[#6366f1]/5 border border-[#6366f1]/20 p-6 rounded-3xl flex items-start gap-4">
         <div className="text-2xl">🧠</div>
         <div>
-           <h4 className="font-bold text-[#6366f1] mb-1 text-sm uppercase tracking-wider">How is this &quot;Heavy&quot;?</h4>
-           <p className="text-slate-400 text-xs leading-relaxed">
-             This component manages real-time intervals, complex SVG math for sparklines, 
-             and external API states. By lazy loading it, your initial dashboard bundle 
-             remains lightning fast, and this blockchain logic is only downloaded when you need it!
-           </p>
+          <h4 className="font-bold text-[#6366f1] mb-1 text-sm uppercase tracking-wider">How is this &quot;Heavy&quot;?</h4>
+          <p className="text-slate-400 text-xs leading-relaxed">
+            This component manages real-time intervals, complex SVG math for sparklines,
+            and external API states. By lazy loading it, your initial dashboard bundle
+            remains lightning fast, and this blockchain logic is only downloaded when you need it!
+          </p>
         </div>
       </div>
     </div>

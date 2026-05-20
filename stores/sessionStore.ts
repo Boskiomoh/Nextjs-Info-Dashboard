@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
-import { SessionState } from '@/types';
+import {SessionState} from '@/types';
 
 export const useSessionStore = create<SessionState>()(
   persist(

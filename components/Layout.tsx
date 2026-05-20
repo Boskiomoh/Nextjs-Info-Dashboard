@@ -24,7 +24,7 @@ const Layout: React.FC<LayoutProps> = ({ children, hideNav = false }) => {
   } = useSettingsStore();
   const { 
     secureNote, setSecureNote, 
-    tempApiKey, setTempApiKey 
+    tempApiKey, setTempApiKey , clearSession
   } = useSessionStore();
   const [mounted, setMounted] = React.useState(false);
   const [showApiKey, setShowApiKey] = React.useState(false);
@@ -183,6 +183,7 @@ const Layout: React.FC<LayoutProps> = ({ children, hideNav = false }) => {
                 </button>
                 <button 
                   onClick={async () => {
+                    clearSession();
                     await logout();
                     setIsLogoutModalOpen(false);
                     toast.info("Logged out successfully");

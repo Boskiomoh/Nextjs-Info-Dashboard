@@ -17,6 +17,21 @@ export interface SessionState {
   setTempApiKey: (key: string) => void;
   clearSession: () => void;
 }
+export interface TicketPayload {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}
+
+export interface SupportDraft {
+  email: string;
+  subject: string;
+  message: string;
+  setField: (field: 'email' | 'subject' | 'message', value: string) => void;
+  clearDraft: () => void;
+}
+
 export interface DevToArticle {
   id: number;
   title: string;
