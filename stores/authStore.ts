@@ -40,7 +40,6 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   checkAuth: async () => {
-    // Only check if not already loading and not initialized
     set({ isLoading: true });
     try {
       const response = await fetch('/api/auth/me');
@@ -48,6 +47,9 @@ export const useAuthStore = create<AuthState>((set) => ({
         const data = await response.json();
         set({ user: data.user });
       } else {
+        // Token is invalid/expired — clear the stale cookie from the server
+        // so the proxy stops treating this browser as logged in.
+        await fetch('/api/auth/logout', { method: 'POST' });
         set({ user: null });
       }
     } catch (error) {
