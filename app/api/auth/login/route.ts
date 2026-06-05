@@ -26,11 +26,16 @@ export async function POST(request: Request) {
     { expiresIn: '7d' }
   );
 
+  // Determine if request is secure (HTTPS)
+  const requestUrl = new URL(request.url);
+  const forwardedProto = request.headers.get('x-forwarded-proto');
+  const isSecureConnection = forwardedProto === 'https' || requestUrl.protocol === 'https:';
+
   // Set the cookie using the cookies() API
   const cookieStore = await cookies();
   cookieStore.set('study_auth_token', token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: process.env.NODE_ENV === 'production' && isSecureConnection,
     sameSite: 'lax',
     path: '/',
     maxAge: 60 * 60 * 24 * 7, // 1 week
