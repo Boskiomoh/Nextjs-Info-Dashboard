@@ -6,7 +6,10 @@ export async function GET() {
    * BEFORE: Redundant fallback logic repeated in every route
    * const baseUrl = process.env.NEXT_PUBLIC_CRYPTO_API_URL || 'https://api.coingecko.com/api/v3/coins/markets';
    */
-  const baseUrl = API_CONFIG.getCryptoUrl() || 'https://api.coingecko.com/api/v3/coins/markets';
+  const baseUrl = API_CONFIG.getCryptoUrl();
+  if (!baseUrl) {
+    return NextResponse.json({ error: 'NEXT_PUBLIC_CRYPTO_API_URL environment variable is missing' }, { status: 500 });
+  }
   
   try {
     const res = await fetch(`${baseUrl}?vs_currency=usd&order=market_cap_desc&per_page=10&page=1&sparkline=true`);

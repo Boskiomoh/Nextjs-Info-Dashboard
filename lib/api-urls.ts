@@ -9,9 +9,11 @@ export const API_CONFIG = {
     // If we are on Vercel, it provides VERCEL_URL automatically
     if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
     
-    // Fallback to your .env variable or localhost
-    // We remove '/api' from the end if it's there to keep it clean
-    return process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:3000';
+    const url = process.env.NEXT_PUBLIC_API_URL;
+    if (!url) {
+      throw new Error('NEXT_PUBLIC_API_URL environment variable is missing');
+    }
+    return url.replace('/api', '');
   },
 
   // 2. Dev.to External API Switcher
