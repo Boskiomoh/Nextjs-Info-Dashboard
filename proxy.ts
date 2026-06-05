@@ -7,7 +7,7 @@ import type { NextRequest } from 'next/server';
  * It is the most secure place to handle redirects because it 
  * operates at the "Gateway" level. 
  */
-export default function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // 1. Get the auth token from cookies
