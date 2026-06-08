@@ -10,6 +10,11 @@ export interface AuthContextType {
   logout: () => void;
   isLoading: boolean;
 }
+export interface SavedTicket {
+  id: string;
+  subject: string;
+  date: string;
+}
 export interface SessionState {
   secureNote: string;
   tempApiKey: string;

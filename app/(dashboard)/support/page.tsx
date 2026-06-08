@@ -1,12 +1,12 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useAuthStore } from '@/stores/authStore';
 import { useSupportStore } from '@/stores/supportStore';
 import { toast } from 'sonner';
 
-import { TicketPayload } from '@/types';
+import { TicketPayload,SavedTicket  } from '@/types';
 
 
 async function submitTicket(payload: TicketPayload) {
@@ -25,15 +25,40 @@ async function submitTicket(payload: TicketPayload) {
 export default function SupportPage() {
   const { user } = useAuthStore();
 
+  // Stores the ticket ID returned by osTicket on success
+  const [ticketId, setTicketId] = useState<string | null>(null);
+  const [ticketList, setTicketList] = useState<SavedTicket[]>([]);
+
+  useEffect(() => {
+    // Load tickets from browser memory when the page mounts
+    const saved = localStorage.getItem('my_tickets');
+    if (saved) {
+      setTicketList(JSON.parse(saved));
+    }
+  }, []);
+
   // Zustand: persists draft across page navigations (sessionStorage)
   const { email, subject, message, setField, clearDraft } = useSupportStore();
 
   // TanStack Query: handles loading, error, success lifecycle for the API call
-  const { mutate, isPending, isSuccess, reset } = useMutation({
+  const { mutate, isPending, reset } = useMutation({
     mutationFn: submitTicket,
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success('Ticket Sent Successfully!');
-      clearDraft(); // wipe Zustand draft on success
+      
+      // Save to localStorage
+      const savedTickets = JSON.parse(localStorage.getItem('my_tickets') || '[]');
+      const newTicket: SavedTicket = {
+        id: data.ticketId,
+        subject: subject, // subject from Zustand store is still available here
+        date: new Date().toLocaleDateString()
+      };
+      const updatedTickets = [newTicket, ...savedTickets];
+      localStorage.setItem('my_tickets', JSON.stringify(updatedTickets));
+      
+      setTicketList(updatedTickets);
+      clearDraft();           // wipe Zustand draft
+      setTicketId(data.ticketId); // capture the osTicket ID
     },
     onError: (err: Error) => {
       toast.error(err.message || 'An unexpected error occurred');
@@ -56,6 +81,57 @@ export default function SupportPage() {
     });
   };
 
+  // ── Success receipt view ───────────────────────────────────────────────────
+  if (ticketId) {
+    return (
+      <div className="max-w-2xl mx-auto space-y-8">
+        <div className="space-y-2">
+          <h1 className="text-4xl font-black text-white tracking-tight">
+            Support <span className="text-[#6366f1]">Center</span>
+          </h1>
+        </div>
+
+        <div className="bg-slate-900/50 backdrop-blur-xl border border-emerald-500/30 rounded-3xl p-10 shadow-2xl text-center space-y-6 relative overflow-hidden">
+          {/* Glow */}
+          <div className="absolute inset-0 bg-emerald-500/5 pointer-events-none rounded-3xl" />
+
+          {/* Check icon */}
+          <div className="flex items-center justify-center">
+            <div className="w-16 h-16 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <h2 className="text-2xl font-black text-white">Ticket Submitted!</h2>
+            <p className="text-slate-400 text-sm">Your support reference number is:</p>
+          </div>
+
+          {/* Ticket number */}
+          <div className="inline-block px-8 py-4 bg-slate-950/60 border border-emerald-500/20 rounded-2xl">
+            <span className="text-5xl font-mono font-bold text-emerald-400 tracking-widest">
+              #{ticketId}
+            </span>
+          </div>
+
+          <p className="text-slate-500 text-sm">
+            A confirmation has been sent to <span className="text-slate-300 font-medium">{email || 'your email'}</span>.
+            Keep your reference number handy — it matches any emails you receive from us.
+          </p>
+
+          <button
+            onClick={() => { setTicketId(null); reset(); }}
+            className="mt-2 text-[#6366f1] text-sm font-semibold hover:text-[#818cf8] transition-colors underline underline-offset-4"
+          >
+            Send another message
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-2xl mx-auto space-y-8">
       <div className="space-y-2">
@@ -76,7 +152,7 @@ export default function SupportPage() {
         </div>
 
         {/* Draft indicator — shows when Zustand has saved data */}
-        {(email || subject || message) && !isSuccess && (
+        {(email || subject || message) && (
           <div className="mb-6 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center gap-2 text-amber-400 text-xs font-semibold">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
             Draft saved — your message is preserved if you navigate away.
@@ -160,15 +236,7 @@ export default function SupportPage() {
           </button>
         </form>
 
-        {/* Success banner */}
-        {isSuccess && (
-          <div className="mt-6 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center gap-3 text-emerald-400 text-sm font-medium animate-fade-in">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-            Your support ticket has been received! We'll get back to you soon.
-          </div>
-        )}
+        {/* Success is now handled by the receipt view above — no inline banner needed */}
       </div>
 
       {/* Info cards */}
@@ -181,6 +249,40 @@ export default function SupportPage() {
           <h3 className="text-white font-bold mb-1">Office Hours</h3>
           <p className="text-slate-500 text-sm">Monday - Friday, 9AM - 5PM EST.</p>
         </div>
+      </div>
+
+      {/* Recent Tickets List */}
+      <div className="bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl overflow-hidden mt-8">
+        <h3 className="text-xl font-bold text-white mb-6">Your Recent Tickets</h3>
+        
+        {ticketList.length === 0 ? (
+          <p className="text-slate-500 text-sm">No recent tickets found on this device.</p>
+        ) : (
+          <ul className="space-y-4">
+            {ticketList.map((ticket, index) => (
+              <li key={index} className="p-4 bg-slate-950/50 rounded-2xl border border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:border-white/10 transition-colors">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-[#6366f1]/10 border border-[#6366f1]/20 flex items-center justify-center shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-[#6366f1]">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                      <line x1="16" y1="13" x2="8" y2="13"></line>
+                      <line x1="16" y1="17" x2="8" y2="17"></line>
+                      <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-[#6366f1] font-mono text-sm font-bold tracking-wider">#{ticket.id}</span>
+                      <span className="text-slate-500 text-xs px-2 py-0.5 bg-slate-800 rounded-full">{ticket.date}</span>
+                    </div>
+                    <p className="text-slate-200 font-medium">{ticket.subject}</p>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );

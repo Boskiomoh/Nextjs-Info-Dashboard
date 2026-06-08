@@ -32,7 +32,7 @@ export async function POST(request: Request) {
 
         if (res.status === 201) {
             const ticketNumber = await res.text();
-            return NextResponse.json({ message: "Success", id: ticketNumber });
+            return NextResponse.json({ success: true, ticketId: ticketNumber });
         } else {
             const errorData = await res.text();
             console.error("osTicket Error:", errorData);
