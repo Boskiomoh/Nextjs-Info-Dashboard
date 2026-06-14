@@ -20,7 +20,7 @@ export async function GET(request: Request) {
             port: Number(process.env.OSTICKET_DB_PORT) || 3306,
         });
 
-        // SQL Query to retrieve the thread conversation
+        // SQL Query to retrieve the thread conversation (joining ost_user_email to resolve email address)
         const [rows]: any = await connection.execute(`
             SELECT 
                 e.body as message, 
@@ -30,7 +30,11 @@ export async function GET(request: Request) {
             FROM ost_thread_entry e
             JOIN ost_thread th ON e.thread_id = th.id
             JOIN ost_ticket tk ON th.object_id = tk.ticket_id
-            WHERE tk.number = ? AND tk.email = ?
+            JOIN ost_user u ON tk.user_id = u.id
+            JOIN ost_user_email ue ON u.id = ue.user_id
+            WHERE tk.number = ? 
+              AND ue.address = ?
+              AND th.object_type = 'T'
             ORDER BY e.created ASC
         `, [ticketNumber, userEmail]);
 

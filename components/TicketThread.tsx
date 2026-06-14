@@ -7,7 +7,7 @@ interface Message {
   message: string;
   sender: string;
   timestamp: string;
-  sender_type: string; // 'S' for staff, otherwise customer
+  sender_type: string; // 'R' for response (staff), 'M' for message (customer)
 }
 
 interface TicketThreadProps {
@@ -26,6 +26,8 @@ export default function TicketThread({
   const [email, setEmail] = useState(initialEmail || '');
   const [isEmailConfirmed, setIsEmailConfirmed] = useState(!!initialEmail);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [reply, setReply] = useState('');
+  const [isSending, setIsSending] = useState(false);
 
   // TanStack Query for retrieving the support thread
   const {
@@ -53,6 +55,28 @@ export default function TicketThread({
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, isLoading, isRefetching]);
+
+  const handleReply = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reply.trim()) return;
+
+    setIsSending(true);
+    const res = await fetch('/api/support/reply', {
+        method: 'POST',
+        body: JSON.stringify({
+            ticketNumber,
+            email,
+            message: reply,
+            userName: "You" // Or get the actual name from session
+        })
+    });
+
+    if (res.ok) {
+        setReply('');
+        refetch(); // Reload the thread from TanStack Query
+    }
+    setIsSending(false);
+  };
 
   const handleEmailSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -228,38 +252,26 @@ export default function TicketThread({
           /* Actual message list */
           <div className="flex flex-col space-y-4 py-2">
             {messages.map((msg, i) => {
-              const isStaff = msg.sender_type === 'S';
-              return (
-                <div
-                  key={i}
-                  className={`flex flex-col max-w-[85%] ${
-                    isStaff ? 'self-start items-start' : 'self-end items-end'
-                  } group/msg`}
-                >
-                  {/* Sender Info / Timestamp */}
-                  <span className="text-[10px] font-bold text-slate-500 mb-1 px-1 flex gap-2">
-                    <span className={isStaff ? 'text-[#6366f1]' : 'text-emerald-400'}>
-                      {isStaff ? `Agent: ${msg.sender}` : 'You'}
-                    </span>
-                    <span>•</span>
-                    <span>{new Date(msg.timestamp).toLocaleString()}</span>
-                  </span>
+              // Use .toUpperCase() to ensure it catches 'r' or 'R'
+              const isSupport = msg.sender_type?.toUpperCase() === 'R';
 
-                  {/* Message Bubble */}
-                  <div
-                    className={`p-4 rounded-2xl text-sm leading-relaxed border ${
-                      isStaff
-                        ? 'bg-slate-950/40 border-[#6366f1]/20 text-slate-200 rounded-tl-none shadow-md shadow-[#6366f1]/5'
-                        : 'bg-[#6366f1]/10 border-[#6366f1]/30 text-white rounded-tr-none shadow-md shadow-slate-950/40'
-                    }`}
-                  >
-                    <div
-                      className="prose prose-invert prose-sm max-w-none break-words
-                        prose-p:leading-relaxed prose-p:my-1 prose-a:text-[#6366f1] 
-                        prose-a:underline hover:prose-a:text-[#818cf8]"
-                      dangerouslySetInnerHTML={{ __html: msg.message }}
-                    />
-                  </div>
+              return (
+                <div 
+                  key={i} 
+                  className={`max-w-[80%] p-3 rounded-xl flex flex-col ${
+                    isSupport 
+                      ? 'bg-blue-600 self-start mr-auto items-start text-left' // Support Team
+                      : 'bg-slate-700 self-end ml-auto items-end text-right'   // You
+                  }`}
+                >
+                  <p className="text-[10px] font-black uppercase tracking-widest mb-1 opacity-50">
+                    {isSupport ? 'Support Team' : 'You'} • {new Date(msg.timestamp).toLocaleString()}
+                  </p>
+                  
+                  <div 
+                    className={`text-sm prose prose-invert max-w-full ${isSupport ? 'text-left' : 'text-right'}`}
+                    dangerouslySetInnerHTML={{ __html: msg.message }} 
+                  />
                 </div>
               );
             })}
@@ -267,6 +279,24 @@ export default function TicketThread({
           </div>
         )}
       </div>
+
+      {/* Reply Form */}
+      {isEmailConfirmed && !isLoading && !error && (
+        <form onSubmit={handleReply} className="mt-4 flex gap-2 border-t border-white/10 pt-4 shrink-0">
+          <input 
+              value={reply}
+              onChange={(e) => setReply(e.target.value)}
+              placeholder="Type your message..."
+              className="flex-1 bg-slate-950/50 border border-white/5 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-[#6366f1]/50"
+          />
+          <button 
+              disabled={isSending || !reply.trim()}
+              className="bg-[#6366f1] px-4 py-2 rounded-xl text-sm font-bold text-white hover:bg-[#5558e3] disabled:opacity-50"
+          >
+              {isSending ? "..." : "Send"}
+          </button>
+        </form>
+      )}
 
       {/* Footer Info */}
       <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between shrink-0 text-[10px] text-slate-500 font-bold uppercase tracking-wider">
