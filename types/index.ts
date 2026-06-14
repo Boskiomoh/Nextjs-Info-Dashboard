@@ -14,6 +14,7 @@ export interface SavedTicket {
   id: string;
   subject: string;
   date: string;
+  email?: string;
 }
 export interface SessionState {
   secureNote: string;

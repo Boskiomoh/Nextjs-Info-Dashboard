@@ -7,6 +7,7 @@ import { useSupportStore } from '@/stores/supportStore';
 import { toast } from 'sonner';
 
 import { TicketPayload,SavedTicket  } from '@/types';
+import TicketThread from '@/components/TicketThread';
 
 
 async function submitTicket(payload: TicketPayload) {
@@ -28,6 +29,7 @@ export default function SupportPage() {
   // Stores the ticket ID returned by osTicket on success
   const [ticketId, setTicketId] = useState<string | null>(null);
   const [ticketList, setTicketList] = useState<SavedTicket[]>([]);
+  const [selectedTicket, setSelectedTicket] = useState<SavedTicket | null>(null);
 
   useEffect(() => {
     // Load tickets from browser memory when the page mounts
@@ -51,7 +53,8 @@ export default function SupportPage() {
       const newTicket: SavedTicket = {
         id: data.ticketId,
         subject: subject, // subject from Zustand store is still available here
-        date: new Date().toLocaleDateString()
+        date: new Date().toLocaleDateString(),
+        email: email, // Store the email used to submit the ticket
       };
       const updatedTickets = [newTicket, ...savedTickets];
       localStorage.setItem('my_tickets', JSON.stringify(updatedTickets));
@@ -139,105 +142,122 @@ export default function SupportPage() {
           Support <span className="text-[#6366f1]">Center</span>
         </h1>
         <p className="text-slate-400">
-          Have a question or feedback? Submit a ticket to our support team.
+          {selectedTicket 
+            ? `Viewing conversation thread for support ticket #${selectedTicket.id}.` 
+            : 'Have a question or feedback? Submit a ticket to our support team.'}
         </p>
       </div>
 
-      <div className="bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl overflow-hidden relative group">
-        {/* Decorative icon */}
-        <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none group-hover:scale-110 transition-transform duration-700">
-          <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-[#6366f1]">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-          </svg>
+      {selectedTicket ? (
+        <TicketThread
+          ticketNumber={selectedTicket.id}
+          initialEmail={selectedTicket.email || ''}
+          onClose={() => setSelectedTicket(null)}
+          onEmailResolved={(resolvedEmail) => {
+            // Update email in local storage so they don't have to enter it again
+            const updated = ticketList.map(t => 
+              t.id === selectedTicket.id ? { ...t, email: resolvedEmail } : t
+            );
+            localStorage.setItem('my_tickets', JSON.stringify(updated));
+            setTicketList(updated);
+            setSelectedTicket(prev => prev ? { ...prev, email: resolvedEmail } : null);
+          }}
+        />
+      ) : (
+        <div className="bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl overflow-hidden relative group">
+          {/* Decorative icon */}
+          <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none group-hover:scale-110 transition-transform duration-700">
+            <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-[#6366f1]">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+          </div>
+
+          {/* Draft indicator — shows when Zustand has saved data */}
+          {(email || subject || message) && (
+            <div className="mb-6 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center gap-2 text-amber-400 text-xs font-semibold">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              Draft saved — your message is preserved if you navigate away.
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
+            {/* Email */}
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase tracking-widest text-slate-500 ml-1">
+                Email Address
+              </label>
+              <input
+                id="support-email"
+                type="email"
+                value={email}
+                onChange={(e) => setField('email', e.target.value)}
+                placeholder="your@email.com"
+                disabled={isPending}
+                className="w-full bg-slate-950/50 border border-white/5 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-[#6366f1]/50 focus:ring-4 focus:ring-[#6366f1]/10 transition-all placeholder:text-slate-600 disabled:opacity-50"
+              />
+            </div>
+
+            {/* Subject */}
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase tracking-widest text-slate-500 ml-1">
+                Subject
+              </label>
+              <input
+                id="support-subject"
+                type="text"
+                value={subject}
+                onChange={(e) => setField('subject', e.target.value)}
+                placeholder="Briefly describe your issue"
+                disabled={isPending}
+                className="w-full bg-slate-950/50 border border-white/5 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-[#6366f1]/50 focus:ring-4 focus:ring-[#6366f1]/10 transition-all placeholder:text-slate-600 disabled:opacity-50"
+              />
+            </div>
+
+            {/* Message */}
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase tracking-widest text-slate-500 ml-1">
+                Message
+              </label>
+              <textarea
+                id="support-message"
+                value={message}
+                onChange={(e) => setField('message', e.target.value)}
+                placeholder="Tell us more about how we can help..."
+                rows={6}
+                disabled={isPending}
+                className="w-full bg-slate-950/50 border border-white/5 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-[#6366f1]/50 focus:ring-4 focus:ring-[#6366f1]/10 transition-all placeholder:text-slate-600 resize-none disabled:opacity-50"
+              />
+            </div>
+
+            {/* Submit Button — state driven by TanStack Query */}
+            <button
+              id="support-submit-btn"
+              type="submit"
+              disabled={isPending}
+              className={`w-full py-4 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
+                isPending
+                  ? 'bg-slate-800 text-slate-400 cursor-not-allowed'
+                  : 'bg-[#6366f1] hover:bg-[#5558e3] text-white shadow-xl shadow-[#6366f1]/20 hover:shadow-[#6366f1]/40 hover:-translate-y-0.5 active:translate-y-0'
+              }`}
+            >
+              {isPending ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                  Sending Ticket...
+                </>
+              ) : (
+                <>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13" />
+                    <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                  </svg>
+                  Submit Ticket
+                </>
+              )}
+            </button>
+          </form>
         </div>
-
-        {/* Draft indicator — shows when Zustand has saved data */}
-        {(email || subject || message) && (
-          <div className="mb-6 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center gap-2 text-amber-400 text-xs font-semibold">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-            Draft saved — your message is preserved if you navigate away.
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
-          {/* Email */}
-          <div className="space-y-2">
-            <label className="text-xs font-black uppercase tracking-widest text-slate-500 ml-1">
-              Email Address
-            </label>
-            <input
-              id="support-email"
-              type="email"
-              value={email}
-              onChange={(e) => setField('email', e.target.value)}
-              placeholder="your@email.com"
-              disabled={isPending}
-              className="w-full bg-slate-950/50 border border-white/5 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-[#6366f1]/50 focus:ring-4 focus:ring-[#6366f1]/10 transition-all placeholder:text-slate-600 disabled:opacity-50"
-            />
-          </div>
-
-          {/* Subject */}
-          <div className="space-y-2">
-            <label className="text-xs font-black uppercase tracking-widest text-slate-500 ml-1">
-              Subject
-            </label>
-            <input
-              id="support-subject"
-              type="text"
-              value={subject}
-              onChange={(e) => setField('subject', e.target.value)}
-              placeholder="Briefly describe your issue"
-              disabled={isPending}
-              className="w-full bg-slate-950/50 border border-white/5 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-[#6366f1]/50 focus:ring-4 focus:ring-[#6366f1]/10 transition-all placeholder:text-slate-600 disabled:opacity-50"
-            />
-          </div>
-
-          {/* Message */}
-          <div className="space-y-2">
-            <label className="text-xs font-black uppercase tracking-widest text-slate-500 ml-1">
-              Message
-            </label>
-            <textarea
-              id="support-message"
-              value={message}
-              onChange={(e) => setField('message', e.target.value)}
-              placeholder="Tell us more about how we can help..."
-              rows={6}
-              disabled={isPending}
-              className="w-full bg-slate-950/50 border border-white/5 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-[#6366f1]/50 focus:ring-4 focus:ring-[#6366f1]/10 transition-all placeholder:text-slate-600 resize-none disabled:opacity-50"
-            />
-          </div>
-
-          {/* Submit Button — state driven by TanStack Query */}
-          <button
-            id="support-submit-btn"
-            type="submit"
-            disabled={isPending}
-            className={`w-full py-4 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
-              isPending
-                ? 'bg-slate-800 text-slate-400 cursor-not-allowed'
-                : 'bg-[#6366f1] hover:bg-[#5558e3] text-white shadow-xl shadow-[#6366f1]/20 hover:shadow-[#6366f1]/40 hover:-translate-y-0.5 active:translate-y-0'
-            }`}
-          >
-            {isPending ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                Sending Ticket...
-              </>
-            ) : (
-              <>
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="22" y1="2" x2="11" y2="13" />
-                  <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                </svg>
-                Submit Ticket
-              </>
-            )}
-          </button>
-        </form>
-
-        {/* Success is now handled by the receipt view above — no inline banner needed */}
-      </div>
+      )}
 
       {/* Info cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -260,7 +280,7 @@ export default function SupportPage() {
         ) : (
           <ul className="space-y-4">
             {ticketList.map((ticket, index) => (
-              <li key={index} className="p-4 bg-slate-950/50 rounded-2xl border border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:border-white/10 transition-colors">
+              <li key={index} className="p-4 bg-slate-950/50 rounded-2xl border border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-white/10 transition-colors">
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-xl bg-[#6366f1]/10 border border-[#6366f1]/20 flex items-center justify-center shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-[#6366f1]">
@@ -279,6 +299,19 @@ export default function SupportPage() {
                     <p className="text-slate-200 font-medium">{ticket.subject}</p>
                   </div>
                 </div>
+                
+                <button
+                  onClick={() => {
+                    setSelectedTicket(ticket);
+                    setTicketId(null);
+                  }}
+                  className="px-4 py-2 bg-slate-900 hover:bg-[#6366f1]/15 text-slate-300 hover:text-white rounded-xl text-xs font-bold border border-white/5 hover:border-[#6366f1]/30 transition-all flex items-center gap-1.5 cursor-pointer self-start sm:self-auto shrink-0"
+                >
+                  View Thread
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
+                </button>
               </li>
             ))}
           </ul>
