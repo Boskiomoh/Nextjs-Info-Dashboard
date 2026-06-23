@@ -142,7 +142,7 @@ const Layout: React.FC<LayoutProps> = ({ children, hideNav = false }) => {
               <div className="flex flex-col gap-4">
                 <div className="flex flex-col">
                   {!sidebarCollapsed && <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Status</span>}
-                  <span className="text-sm font-bold text-[#6366f1] truncate">{user.username}</span>
+                  <span className="text-sm font-bold text-[#6366f1] truncate">{user.email}</span>
                 </div>
                 <button 
                   onClick={() => setIsLogoutModalOpen(true)} 

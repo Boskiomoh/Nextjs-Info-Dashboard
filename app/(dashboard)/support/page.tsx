@@ -32,13 +32,13 @@ export default function SupportPage() {
 
   // TanStack Query to fetch live tickets from the database
   const { data: ticketList = [], isLoading: ticketsLoading, refetch: refetchTickets } = useQuery<LiveTicket[]>({
-    queryKey: ['supportTickets', user?.username],
+    queryKey: ['supportTickets', user?.email],
     queryFn: async () => {
-      const res = await fetch(`/api/support/list-tickets?email=${encodeURIComponent(user?.username || '')}`);
+      const res = await fetch(`/api/support/list-tickets?email=${encodeURIComponent(user?.email || '')}`);
       if (!res.ok) throw new Error('Failed to fetch tickets');
       return res.json();
     },
-    enabled: !!user?.username,
+    enabled: !!user?.email,
   });
 
   // Zustand: persists draft across page navigations (sessionStorage)
@@ -65,7 +65,7 @@ export default function SupportPage() {
       toast.error('Please fill in all fields');
       return;
     }
-    const userEmail = user?.username;
+    const userEmail = user?.email;
     if (!userEmail) {
       toast.error('You must be logged in to submit a ticket.');
       return;
@@ -116,7 +116,7 @@ export default function SupportPage() {
           </div>
 
           <p className="text-slate-500 text-sm">
-            A confirmation has been sent to <span className="text-slate-300 font-medium">{user?.username || 'your email'}</span>.
+            A confirmation has been sent to <span className="text-slate-300 font-medium">{user?.email || 'your email'}</span>.
             Keep your reference number handy — it matches any emails you receive from us.
           </p>
 
@@ -147,7 +147,7 @@ export default function SupportPage() {
       {selectedTicket ? (
         <TicketThread
           ticketNumber={selectedTicket.number}
-          initialEmail={user?.username || ''}
+          initialEmail={user?.email || ''}
           onClose={() => setSelectedTicket(null)}
         />
       ) : (

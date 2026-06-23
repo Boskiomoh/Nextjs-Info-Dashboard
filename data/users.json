@@ -1,18 +1,18 @@
 [
   {
-    "username": "admin@example.com",
+    "email": "admin@example.com",
     "password": "password123",
     "name": "Project Admin",
     "role": "admin"
   },
    {
-    "username": "akpevweogheneomoyibo@gmail.com",
+    "email": "akpevweogheneomoyibo@gmail.com",
     "password": "password123",
     "name": "Project Admin",
     "role": "admin"
   },
   {
-    "username": "student@example.com",
+    "email": "student@example.com",
     "password": "study-hard",
     "name": "Next.js Student",
     "role": "student"

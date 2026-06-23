@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
 const LoginPage = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { login } = useAuthStore();
@@ -16,19 +16,19 @@ const LoginPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!username.trim()) return;
+    if (!email.trim()) return;
 
     setIsSubmitting(true);
     try {
-      const success = await login(username, password);
+      const success = await login(email, password);
       if (success) {
-        toast.success(`Welcome back, ${username}!`, {
+        toast.success(`Welcome back, ${email}!`, {
           description: "You have successfully logged into your dashboard.",
         });
         router.push('/');
       } else {
         toast.error('Authentication Failed', {
-          description: 'Invalid username or password. Please try again.',
+          description: 'Invalid email or password. Please try again.',
         });
         setIsSubmitting(false);
       }
@@ -54,13 +54,13 @@ const LoginPage = () => {
           
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider ml-1">Email Username</label>
+              <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider ml-1">Email</label>
               <input 
                 type="email" 
                 placeholder="e.g. admin@example.com" 
                 className="w-full px-5 py-3.5 bg-black/20 border border-white/5 rounded-2xl text-white outline-none focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1]/50 transition-all placeholder:text-slate-600"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>

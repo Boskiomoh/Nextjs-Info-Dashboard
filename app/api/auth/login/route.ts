@@ -9,25 +9,25 @@ if (!JWT_SECRET) {
 }
 
 export async function POST(request: Request) {
-  const { username, password } = await request.json();
+  const { email, password } = await request.json();
 
-  // Validate that the username is an email address
+  // Validate that the email is an email address
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(username)) {
-    return NextResponse.json({ message: 'Username must be a valid email address' }, { status: 400 });
+  if (!emailRegex.test(email)) {
+    return NextResponse.json({ message: 'Must provide a valid email address' }, { status: 400 });
   }
 
   // Find user in our mock JSON database
-  const user = users.find(u => u.username === username && u.password === password);
+  const user = users.find(u => (u as any).email === email && u.password === password);
 
   if (!user) {
-    return NextResponse.json({ message: 'Invalid username or password' }, { status: 401 });
+    return NextResponse.json({ message: 'Invalid email or password' }, { status: 401 });
   }
 
   // Generate a secure JWT
   const token = jwt.sign(
     { 
-      username: user.username, 
+      email: (user as any).email, 
       name: user.name,
       role: user.role 
     },
@@ -50,5 +50,5 @@ export async function POST(request: Request) {
     maxAge: 60 * 60 * 24 * 7, // 1 week
   });
 
-  return NextResponse.json({ user: { username } });
+  return NextResponse.json({ user: { email } });
 }

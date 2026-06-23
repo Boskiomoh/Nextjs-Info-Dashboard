@@ -1,12 +1,12 @@
 import { ReactNode } from 'react';
 
 export interface User {
-  username: string;
+  email: string;
 }
 
 export interface AuthContextType {
   user: User | null;
-  login: (username: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   isLoading: boolean;
 }
@@ -61,7 +61,7 @@ export interface AuthState {
   user: User | null;
   isLoading: boolean;
   initialized: boolean; // To track if we've checked the session already
-  login: (username: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
 }
