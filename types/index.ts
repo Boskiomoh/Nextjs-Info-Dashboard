@@ -16,6 +16,12 @@ export interface SavedTicket {
   date: string;
   email?: string;
 }
+export interface LiveTicket {
+  number: string;
+  subject: string;
+  created: string;
+  status_id: number;
+}
 export interface SessionState {
   secureNote: string;
   tempApiKey: string;

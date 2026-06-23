@@ -13,11 +13,11 @@ export async function GET(request: Request) {
     try {
         // Connect to the osTicket Database
         const connection = await mysql.createConnection({
-            host: process.env.OSTICKET_DB_HOST || '102.223.37.189',
-            user: process.env.OSTICKET_DB_USER || 'dash_reader',
-            password: process.env.OSTICKET_DB_PASSWORD || 'Password_123',
-            database: process.env.OSTICKET_DB_NAME || 'osticket_db',
-            port: Number(process.env.OSTICKET_DB_PORT) || 3306,
+            host: process.env.OSTICKET_DB_HOST,
+            user: process.env.OSTICKET_DB_USER ,
+            password: process.env.OSTICKET_DB_PASSWORD ,
+            database: process.env.OSTICKET_DB_NAME ,
+            port: Number(process.env.OSTICKET_DB_PORT) 
         });
 
         // SQL Query to retrieve the thread conversation (joining ost_user_email to resolve email address)

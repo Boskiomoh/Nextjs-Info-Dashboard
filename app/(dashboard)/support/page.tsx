@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '@/stores/authStore';
 import { useSupportStore } from '@/stores/supportStore';
 import { toast } from 'sonner';
 
-import { TicketPayload,SavedTicket  } from '@/types';
+import { TicketPayload, LiveTicket } from '@/types';
 import TicketThread from '@/components/TicketThread';
 
 
@@ -28,19 +28,21 @@ export default function SupportPage() {
 
   // Stores the ticket ID returned by osTicket on success
   const [ticketId, setTicketId] = useState<string | null>(null);
-  const [ticketList, setTicketList] = useState<SavedTicket[]>([]);
-  const [selectedTicket, setSelectedTicket] = useState<SavedTicket | null>(null);
+  const [selectedTicket, setSelectedTicket] = useState<LiveTicket | null>(null);
 
-  useEffect(() => {
-    // Load tickets from browser memory when the page mounts
-    const saved = localStorage.getItem('my_tickets');
-    if (saved) {
-      setTicketList(JSON.parse(saved));
-    }
-  }, []);
+  // TanStack Query to fetch live tickets from the database
+  const { data: ticketList = [], isLoading: ticketsLoading, refetch: refetchTickets } = useQuery<LiveTicket[]>({
+    queryKey: ['supportTickets', user?.username],
+    queryFn: async () => {
+      const res = await fetch(`/api/support/list-tickets?email=${encodeURIComponent(user?.username || '')}`);
+      if (!res.ok) throw new Error('Failed to fetch tickets');
+      return res.json();
+    },
+    enabled: !!user?.username,
+  });
 
   // Zustand: persists draft across page navigations (sessionStorage)
-  const { email, subject, message, setField, clearDraft } = useSupportStore();
+  const { subject, message, setField, clearDraft } = useSupportStore();
 
   // TanStack Query: handles loading, error, success lifecycle for the API call
   const { mutate, isPending, reset } = useMutation({
@@ -48,18 +50,7 @@ export default function SupportPage() {
     onSuccess: (data) => {
       toast.success('Ticket Sent Successfully!');
       
-      // Save to localStorage
-      const savedTickets = JSON.parse(localStorage.getItem('my_tickets') || '[]');
-      const newTicket: SavedTicket = {
-        id: data.ticketId,
-        subject: subject, // subject from Zustand store is still available here
-        date: new Date().toLocaleDateString(),
-        email: email, // Store the email used to submit the ticket
-      };
-      const updatedTickets = [newTicket, ...savedTickets];
-      localStorage.setItem('my_tickets', JSON.stringify(updatedTickets));
-      
-      setTicketList(updatedTickets);
+      refetchTickets(); // Reload list from DB
       clearDraft();           // wipe Zustand draft
       setTicketId(data.ticketId); // capture the osTicket ID
     },
@@ -70,15 +61,20 @@ export default function SupportPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !subject || !message) {
+    if (!subject || !message) {
       toast.error('Please fill in all fields');
+      return;
+    }
+    const userEmail = user?.username;
+    if (!userEmail) {
+      toast.error('You must be logged in to submit a ticket.');
       return;
     }
     // Reset any previous success/error state before a new attempt
     reset();
     mutate({
-      name: user?.username || 'Guest User',
-      email,
+      name: userEmail,
+      email: userEmail,
       subject,
       message,
     });
@@ -120,7 +116,7 @@ export default function SupportPage() {
           </div>
 
           <p className="text-slate-500 text-sm">
-            A confirmation has been sent to <span className="text-slate-300 font-medium">{email || 'your email'}</span>.
+            A confirmation has been sent to <span className="text-slate-300 font-medium">{user?.username || 'your email'}</span>.
             Keep your reference number handy — it matches any emails you receive from us.
           </p>
 
@@ -143,25 +139,16 @@ export default function SupportPage() {
         </h1>
         <p className="text-slate-400">
           {selectedTicket 
-            ? `Viewing conversation thread for support ticket #${selectedTicket.id}.` 
+            ? `Viewing conversation thread for support ticket #${selectedTicket.number}.` 
             : 'Have a question or feedback? Submit a ticket to our support team.'}
         </p>
       </div>
 
       {selectedTicket ? (
         <TicketThread
-          ticketNumber={selectedTicket.id}
-          initialEmail={selectedTicket.email || ''}
+          ticketNumber={selectedTicket.number}
+          initialEmail={user?.username || ''}
           onClose={() => setSelectedTicket(null)}
-          onEmailResolved={(resolvedEmail) => {
-            // Update email in local storage so they don't have to enter it again
-            const updated = ticketList.map(t => 
-              t.id === selectedTicket.id ? { ...t, email: resolvedEmail } : t
-            );
-            localStorage.setItem('my_tickets', JSON.stringify(updated));
-            setTicketList(updated);
-            setSelectedTicket(prev => prev ? { ...prev, email: resolvedEmail } : null);
-          }}
         />
       ) : (
         <div className="bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl overflow-hidden relative group">
@@ -173,7 +160,7 @@ export default function SupportPage() {
           </div>
 
           {/* Draft indicator — shows when Zustand has saved data */}
-          {(email || subject || message) && (
+          {(subject || message) && (
             <div className="mb-6 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center gap-2 text-amber-400 text-xs font-semibold">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
               Draft saved — your message is preserved if you navigate away.
@@ -181,22 +168,6 @@ export default function SupportPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
-            {/* Email */}
-            <div className="space-y-2">
-              <label className="text-xs font-black uppercase tracking-widest text-slate-500 ml-1">
-                Email Address
-              </label>
-              <input
-                id="support-email"
-                type="email"
-                value={email}
-                onChange={(e) => setField('email', e.target.value)}
-                placeholder="your@email.com"
-                disabled={isPending}
-                className="w-full bg-slate-950/50 border border-white/5 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-[#6366f1]/50 focus:ring-4 focus:ring-[#6366f1]/10 transition-all placeholder:text-slate-600 disabled:opacity-50"
-              />
-            </div>
-
             {/* Subject */}
             <div className="space-y-2">
               <label className="text-xs font-black uppercase tracking-widest text-slate-500 ml-1">
@@ -275,8 +246,10 @@ export default function SupportPage() {
       <div className="bg-slate-900/50 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl overflow-hidden mt-8">
         <h3 className="text-xl font-bold text-white mb-6">Your Recent Tickets</h3>
         
-        {ticketList.length === 0 ? (
-          <p className="text-slate-500 text-sm">No recent tickets found on this device.</p>
+        {ticketsLoading ? (
+          <p className="text-slate-500 text-sm">Loading tickets...</p>
+        ) : ticketList.length === 0 ? (
+          <p className="text-slate-500 text-sm">No recent tickets found.</p>
         ) : (
           <ul className="space-y-4">
             {ticketList.map((ticket, index) => (
@@ -293,8 +266,11 @@ export default function SupportPage() {
                   </div>
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-[#6366f1] font-mono text-sm font-bold tracking-wider">#{ticket.id}</span>
-                      <span className="text-slate-500 text-xs px-2 py-0.5 bg-slate-800 rounded-full">{ticket.date}</span>
+                      <span className="text-[#6366f1] font-mono text-sm font-bold tracking-wider">#{ticket.number}</span>
+                      <span className="text-slate-500 text-xs px-2 py-0.5 bg-slate-800 rounded-full">{new Date(ticket.created).toLocaleDateString()}</span>
+                      <span className="text-slate-500 text-xs px-2 py-0.5 bg-slate-800/50 rounded-full border border-white/5">
+                        Status: {ticket.status_id === 1 ? 'Open' : ticket.status_id === 3 ? 'Closed' : ticket.status_id}
+                      </span>
                     </div>
                     <p className="text-slate-200 font-medium">{ticket.subject}</p>
                   </div>

@@ -61,13 +61,14 @@ export default function TicketThread({
     if (!reply.trim()) return;
 
     setIsSending(true);
+    const userNameDisplay = email ? email.split('@')[0] : "You";
     const res = await fetch('/api/support/reply', {
         method: 'POST',
         body: JSON.stringify({
             ticketNumber,
             email,
             message: reply,
-            userName: "You" // Or get the actual name from session
+            userName: userNameDisplay
         })
     });
 
@@ -265,7 +266,7 @@ export default function TicketThread({
                   }`}
                 >
                   <p className="text-[10px] font-black uppercase tracking-widest mb-1 opacity-50">
-                    {isSupport ? 'Support Team' : 'You'} • {new Date(msg.timestamp).toLocaleString()}
+                    {isSupport ? 'Support Team' : (email ? email.split('@')[0] : 'You')} • {new Date(msg.timestamp).toLocaleString()}
                   </p>
                   
                   <div 

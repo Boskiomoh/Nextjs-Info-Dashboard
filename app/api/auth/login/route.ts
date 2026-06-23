@@ -11,6 +11,12 @@ if (!JWT_SECRET) {
 export async function POST(request: Request) {
   const { username, password } = await request.json();
 
+  // Validate that the username is an email address
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(username)) {
+    return NextResponse.json({ message: 'Username must be a valid email address' }, { status: 400 });
+  }
+
   // Find user in our mock JSON database
   const user = users.find(u => u.username === username && u.password === password);
 

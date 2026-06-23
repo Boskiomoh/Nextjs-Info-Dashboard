@@ -54,10 +54,10 @@ const LoginPage = () => {
           
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider ml-1">Username</label>
+              <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider ml-1">Email Username</label>
               <input 
-                type="text" 
-                placeholder="e.g. NextStudent" 
+                type="email" 
+                placeholder="e.g. admin@example.com" 
                 className="w-full px-5 py-3.5 bg-black/20 border border-white/5 rounded-2xl text-white outline-none focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1]/50 transition-all placeholder:text-slate-600"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
